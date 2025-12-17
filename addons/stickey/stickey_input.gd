@@ -31,6 +31,12 @@ class StickeyDevice extends RefCounted:
 	## Raw right trigger pressure
 	var r_trigger_raw: float = 0.0
 	
+	func _to_string() -> String: return "%s (%s)"%[display_name, index]
+	## Returns debug info on current inputs
+	func get_debug_input() -> String:
+		return "LS:%s RS:%s LT:%s RT:%s B:%s"%[
+			get_l_stick(), get_r_stick(), get_l_trigger(), get_r_trigger(), pressed_mask
+			]
 	## Returns true if input is pressed
 	func is_pressed(input: InputType) -> bool:
 		return pressed_mask & (1 << input) != 0
