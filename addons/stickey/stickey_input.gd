@@ -62,10 +62,11 @@ class StickeyDevice extends RefCounted:
 
 ## Button inputs
 enum InputType {
-	SOUTH = 0,
-	EAST = 1,
-	WEST = 2,
-	NORTH = 3,
+	NONE = -1,
+	SOUTH = 0, 				# Bottom face button / Xbox: A Button
+	EAST = 1, 				# Right face button / Xbox: B Button
+	WEST = 2, 				# Left face button / Xbox: X Button
+	NORTH = 3, 				# Top face button / Xbox: Y Button
 	BACK = 4,
 	GUIDE = 5,
 	START = 6,
@@ -73,47 +74,35 @@ enum InputType {
 	R_STICK = 8,
 	L_SHOULDER = 9,
 	R_SHOULDER = 10,
-	UP_DIRECTION = 11,
-	DOWN_DIRECTION = 12,
-	LEFT_DIRECTION = 13,
-	RIGHT_DIRECTION = 14,
-	MISC_1 = 15,
-	SHARE = 15, # Alternative for MISC_1
-	PADDLE_1 = 16,
-	PADDLE_2 = 17,
-	PADDLE_3 = 18,
-	PADDLE_4 = 19,
-	TOUCH_PAD = 20,
-	# MISC_2 through MISC_6 inputs not currently available to Godot
-	MISC_2 = 21,
-	MISC_3 = 22,
-	MISC_4 = 23,
-	MISC_5 = 24,
-	MISC_6 = 25,
-	# Placeholders for axis inputs
-	L_STICK_AXIS = 26,
-	R_STICK_AXIS = 27,
-	L_TRIGGER = 28,
-	R_TRIGGER = 29,
+	UP_DIRECTION = 11,		# Directional pad up
+	DOWN_DIRECTION = 12,	# Directional pad down
+	LEFT_DIRECTION = 13,	# Directional pad left
+	RIGHT_DIRECTION = 14,	# Directional pad right
+	MISC_1 = 15, 			# Share, Microphone, Capture button
+	PADDLE_1 = 16, 			# Upper right paddle
+	PADDLE_2 = 17, 			# Upper left paddle
+	PADDLE_3 = 18, 			# Lower right paddle
+	PADDLE_4 = 19, 			# Lower left paddle
+	TOUCH_PAD = 20, 		# Playstation touchpad
+	MISC_2 = 21, 			# SDL3 button, not currently used by Godot Input!
+	MISC_3 = 22, 			# SDL3 button, not currently used by Godot Input!
+	MISC_4 = 23, 			# SDL3 button, not currently used by Godot Input!
+	MISC_5 = 24, 			# SDL3 button, not currently used by Godot Input!
+	MISC_6 = 25, 			# SDL3 button, not currently used by Godot Input!
+	L_TRIGGER = 30, 		# Pseudo button for left trigger axis
+	R_TRIGGER = 31, 		# Pseudo button for right trigger axis
 }
 ## Axis inputs
 enum AxisType {
+	NONE = -1,
 	L_STICK_X = 0,
-	L_STICK_LEFT = -0,
-	L_STICK_RIGHT = +0,
 	L_STICK_Y = 1,
-	L_STICK_UP = -1,
-	L_STICK_DOWN = +1,
 	R_STICK_X = 2,
-	R_STICK_LEFT = -2,
-	R_STICK_RIGHT = +2,
 	R_STICK_Y = 3,
-	R_STICK_UP = -3,
-	R_STICK_DOWN = +3,
-	L_TRIGGER = +4,
-	R_TRIGGER = +5,
+	L_TRIGGER = 4,
+	R_TRIGGER = 5,
 }
-# Joypad sticks
+## Joypad sticks
 enum Stick {
 	NONE = -1,
 	LEFT = 0,
@@ -176,34 +165,26 @@ func _input(event: InputEvent) -> void:
 								match wasd_stick:
 									Stick.LEFT:
 										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.L_STICK_AXIS, event.pressed)
 									Stick.RIGHT:
 										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.R_STICK_AXIS, event.pressed)
 							KEY_S:
 								match wasd_stick:
 									Stick.LEFT:
 										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.L_STICK_AXIS, event.pressed)
 									Stick.RIGHT:
 										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.R_STICK_AXIS, event.pressed)
 							KEY_A:
 								match wasd_stick:
 									Stick.LEFT:
 										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.L_STICK_AXIS, event.pressed)
 									Stick.RIGHT:
 										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.R_STICK_AXIS, event.pressed)
 							KEY_D:
 								match wasd_stick:
 									Stick.LEFT:
 										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.L_STICK_AXIS, event.pressed)
 									Stick.RIGHT:
 										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.R_STICK_AXIS, event.pressed)
 						return
 				# Handle directional key mapped axis
 				KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT:
@@ -213,34 +194,26 @@ func _input(event: InputEvent) -> void:
 								match directional_keys_stick:
 									Stick.LEFT:
 										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.L_STICK_AXIS, event.pressed)
 									Stick.RIGHT:
 										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.R_STICK_AXIS, event.pressed)
 							KEY_DOWN:
 								match directional_keys_stick:
 									Stick.LEFT:
 										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.L_STICK_AXIS, event.pressed)
 									Stick.RIGHT:
 										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.R_STICK_AXIS, event.pressed)
 							KEY_LEFT:
 								match directional_keys_stick:
 									Stick.LEFT:
 										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.L_STICK_AXIS, event.pressed)
 									Stick.RIGHT:
 										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.R_STICK_AXIS, event.pressed)
 							KEY_RIGHT:
 								match directional_keys_stick:
 									Stick.LEFT:
 										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.L_STICK_AXIS, event.pressed)
 									Stick.RIGHT:
 										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, int(event.pressed))
-										_update_button(KEYBOARD_INDEX, InputType.R_STICK_AXIS, event.pressed)
 						return
 			# Handle mapped input events
 			if keyboard_mappings.has(event.keycode):
@@ -256,11 +229,9 @@ func _input(event: InputEvent) -> void:
 				Stick.LEFT:
 					_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, mouse_raw.x)
 					_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, mouse_raw.y)
-					_update_button(KEYBOARD_INDEX, InputType.L_STICK_AXIS, true)
 				Stick.RIGHT:
 					_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, mouse_raw.x)
 					_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, mouse_raw.y)
-					_update_button(KEYBOARD_INDEX, InputType.R_STICK_AXIS, true)
 		"InputEventJoypadButton":
 			if !Input.get_connected_joypads().has(event.device): return
 			_update_button(event.device, event.button_index, event.pressed)
@@ -269,18 +240,6 @@ func _input(event: InputEvent) -> void:
 			_update_axis(event.device, event.axis, event.axis_value)
 			# Update button masks
 			match event.axis:
-				JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y:
-					if devices[event.device].is_pressed(InputType.L_STICK_AXIS):
-						if abs(event.axis_value) < STICK_INPUT_THRESHOLD:
-							_update_button(event.device, InputType.L_STICK_AXIS, false)
-					elif abs(event.axis_value) > STICK_INPUT_THRESHOLD:
-						_update_button(event.device, InputType.L_STICK_AXIS, true)
-				JOY_AXIS_RIGHT_X, JOY_AXIS_RIGHT_Y:
-					if devices[event.device].is_pressed(InputType.R_STICK_AXIS):
-						if abs(event.axis_value) < STICK_INPUT_THRESHOLD:
-							_update_button(event.device, InputType.R_STICK_AXIS, false)
-					elif abs(event.axis_value) > STICK_INPUT_THRESHOLD:
-						_update_button(event.device, InputType.R_STICK_AXIS, true)
 				JOY_AXIS_TRIGGER_LEFT:
 					if devices[event.device].is_pressed(InputType.L_TRIGGER):
 						if event.axis_value < TRIGGER_RELEASE_THRESHOLD:
@@ -301,13 +260,9 @@ func _process(delta: float) -> void:
 				Stick.LEFT:
 					_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, mouse_raw.x)
 					_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, mouse_raw.y)
-					if mouse_raw == Vector2.ZERO:
-						_update_button(KEYBOARD_INDEX, InputType.L_STICK_AXIS, false)
 				Stick.RIGHT:
 					_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, mouse_raw.x)
 					_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, mouse_raw.y)
-					if mouse_raw == Vector2.ZERO:
-						_update_button(KEYBOARD_INDEX, InputType.R_STICK_AXIS, false)
 
 ## Set default keyboard mappings
 func _initialize_default_keyboard_mappings() -> void:
@@ -334,7 +289,7 @@ func _initialize_default_keyboard_mappings() -> void:
 	keyboard_mappings[KEY_C] = InputType.L_STICK
 	keyboard_mappings[KEY_V] = InputType.R_STICK
 	
-	keyboard_mappings[KEY_P] = InputType.SHARE
+	keyboard_mappings[KEY_P] = InputType.MISC_1
 	keyboard_mappings[KEY_Z] = InputType.PADDLE_1
 	keyboard_mappings[KEY_X] = InputType.PADDLE_2
 	keyboard_mappings[KEY_B] = InputType.PADDLE_3
