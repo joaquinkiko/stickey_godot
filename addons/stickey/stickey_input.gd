@@ -328,11 +328,11 @@ func _initialize_default_keyboard_mappings() -> void:
 	keyboard_mappings[KEY_8] = InputType.MISC_5
 	keyboard_mappings[KEY_9] = InputType.MISC_6
 	
-	mouse_mappings[MouseButton.MOUSE_BUTTON_LEFT] = InputType.L_TRIGGER
-	mouse_mappings[MouseButton.MOUSE_BUTTON_RIGHT] = InputType.R_TRIGGER
+	mouse_mappings[MOUSE_BUTTON_LEFT] = InputType.L_TRIGGER
+	mouse_mappings[MOUSE_BUTTON_RIGHT] = InputType.R_TRIGGER
 	
-	mouse_mappings[MouseButton.MOUSE_BUTTON_WHEEL_UP] = InputType.UP_DIRECTION
-	mouse_mappings[MouseButton.MOUSE_BUTTON_WHEEL_DOWN] = InputType.DOWN_DIRECTION
+	mouse_mappings[MOUSE_BUTTON_WHEEL_UP] = InputType.UP_DIRECTION
+	mouse_mappings[MOUSE_BUTTON_WHEEL_DOWN] = InputType.DOWN_DIRECTION
 
 ## Updates device [member StickeyDevice.pressed_mask]
 func _update_button(device: int, input: InputType, pressed: bool) -> void:
@@ -366,7 +366,3 @@ func _update_axis(device: int, axis: AxisType, value: float) -> void:
 ## Stop vibrations on all devices
 func stop_all_rumble() -> void:
 	for joypad in Input.get_connected_joypads(): Input.stop_joy_vibration(joypad)
-
-func _physics_process(delta: float) -> void:
-	for x in devices.keys():
-		print(devices[x].get_debug_input())
