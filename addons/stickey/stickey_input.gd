@@ -238,10 +238,16 @@ func _input(event: InputEvent) -> void:
 			# Handle mapped input events
 			if keyboard_mappings.has(event.keycode):
 				_update_button(KEYBOARD_INDEX, keyboard_mappings[event.keycode], event.pressed)
+				match mouse_mappings[event.button_index]:
+					InputType.L_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.L_TRIGGER, float(event.pressed))
+					InputType.R_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.R_TRIGGER, float(event.pressed))
 				return
 		"InputEventMouseButton":
 			if mouse_mappings.has(event.button_index):
 				_update_button(KEYBOARD_INDEX, mouse_mappings[event.button_index], event.pressed)
+			match mouse_mappings[event.button_index]:
+				InputType.L_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.L_TRIGGER, float(event.pressed))
+				InputType.R_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.R_TRIGGER, float(event.pressed))
 		"InputEventMouseMotion":
 			mouse_raw = event.relative * MOUSE_SENSITIVITY
 			mouse_raw = mouse_raw.clampf(-MOUSE_CLAMP, MOUSE_CLAMP)
