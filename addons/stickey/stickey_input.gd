@@ -350,3 +350,7 @@ func _update_axis(device: int, axis: AxisType, value: float) -> void:
 			devices[device].r_trigger_raw = value
 	if device == KEYBOARD_INDEX && keyboard_shared_device >= 0 && devices.has(keyboard_shared_device):
 		_update_axis(keyboard_shared_device, axis, value)
+
+## Stop vibrations on all devices
+func stop_all_rumble() -> void:
+	for joypad in Input.get_connected_joypads(): Input.stop_joy_vibration(joypad)
