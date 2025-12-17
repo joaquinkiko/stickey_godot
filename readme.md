@@ -5,7 +5,6 @@ Advanced input manager
 This plugin is designed for **[Godot 4.5+](https://godotengine.org/download)**
 
 ## TODO:
-- Don't call button pressed every frame that axis is updated
 - Project settings for constants
 - Keyboard default bindings project settings
 - Mouse scroll doesn't currently work
