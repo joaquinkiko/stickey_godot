@@ -10,6 +10,7 @@ const MOUSE_SENSITIVITY: float = 0.3 # Should be > 0.0
 const MOUSE_DECAY: float = 10.0 # Should be > 0.0
 const MOUSE_CLAMP: float = 5.0 # Should be >= 1.0
 const SLOW_KEYBOARD_AXIS_MODIFIER = 0.5 # Should be > 0 and < 1
+const INPUT_HISTORY_BUFFER_SIZE: int = 60 # Should be >= 1
 
 ## Represents a connected device
 class StickeyDevice extends RefCounted:
@@ -30,6 +31,8 @@ class StickeyDevice extends RefCounted:
 	var l_trigger_raw: float = 0.0
 	## Raw right trigger pressure
 	var r_trigger_raw: float = 0.0
+	## Buffer of [member pressed_mask] sorted by physics process frame they were captured in
+	var input_history: Dictionary[int,int] = {0:0}
 	
 	func _to_string() -> String: return "%s (%s)"%[display_name, index]
 	## Returns debug info on current inputs
@@ -68,6 +71,39 @@ class StickeyDevice extends RefCounted:
 	func rumble(weak_magnitude: float = 0.5, strong_magnitude: float = 0.3, length: float = 0.1) -> void:
 		if index < 0: return
 		Input.start_joy_vibration(index, weak_magnitude, strong_magnitude, length)
+	## Returns input mask from [param frames_ago] physics process frames. 
+	## If older than buffer history, returns 0.
+	func get_old_input_mask(frames_ago: int) -> int:
+		var search_frame: int = Engine.get_physics_frames() - frames_ago
+		if input_history.has(search_frame): return input_history[search_frame]
+		var keys := input_history.keys()
+		if keys[keys.size() - 1] < search_frame: return input_history[keys[keys.size() - 1]]
+		elif keys[0] > search_frame: return 0
+		var result: int = 0
+		for i in keys.size():
+			if i > search_frame: break
+			result = input_history[keys[i]]
+		return result
+	## Gives the age of the oldest physics frame in the [member input_history] buffer.
+	## Returns -1 if no current input history.
+	func get_age_of_history() -> int:
+		return Engine.get_physics_frames() - input_history.keys()[0]
+	## Checks if input was pressed [param frames_ago] physics process frames.
+	func was_pressed(input: InputType, frames_ago: int) -> bool:
+		return get_old_input_mask(frames_ago) & (1 << input) != 0
+	## Checks if input was released from pressed state [param frames_ago] physics process frames.
+	func was_released(input: InputType, frames_ago: int) -> bool:
+		var was_pressed: bool = false
+		for i in frames_ago:
+			if was_pressed:
+				was_pressed = was_pressed(input, i)
+			elif !was_pressed(input, i): return true
+		return false
+	## Returns true if input was pressed for [param frames_ago] physics process frames.
+	func was_held(input: InputType, frames_ago: int) -> bool:
+		for i in frames_ago:
+			if !was_pressed(input, i): return false
+		return true
 
 ## Button inputs
 enum InputType {
@@ -343,6 +379,11 @@ func _update_button(device: int, input: InputType, pressed: bool) -> void:
 	var bit := 1 << int(input)
 	if pressed: devices[device].pressed_mask |= bit
 	else: devices[device].pressed_mask &= ~bit
+	# Update buffer histroy
+	devices[device].input_history[Engine.get_physics_frames()] = devices[device].pressed_mask
+	if devices[device].input_history.size() > INPUT_HISTORY_BUFFER_SIZE:
+		devices[device].input_history.erase(devices[device].input_history.keys()[0])
+	# Send keyboard input to gamepad
 	if device == KEYBOARD_INDEX && keyboard_shared_device >= 0 && devices.has(keyboard_shared_device):
 		_update_button(keyboard_shared_device, input, pressed)
 

@@ -7,8 +7,6 @@ This plugin is designed for **[Godot 4.5+](https://godotengine.org/download)**
 ## TODO:
 - Project settings for constants
 - Keyboard default bindings project settings
-- Mouse scroll doesn't currently work
-- Coyote time press (pressed in last x-frames/seconds)
 - Keyboard bindings serializing / deserializing
 - Gamepad alternate mappings (translate button to different button)
 - Axis modifiers (invert-Y, slow axis movement)
