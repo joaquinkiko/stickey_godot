@@ -98,9 +98,13 @@ enum InputType {
 	MISC_4 = 23, 			# SDL3 button, not currently used by Godot Input!
 	MISC_5 = 24, 			# SDL3 button, not currently used by Godot Input!
 	MISC_6 = 25, 			# SDL3 button, not currently used by Godot Input!
+	MISC_7 = 26,			# Non-gamepad accessible button
+	MISC_8 = 27,			# Non-gamepad accessible button
+	MISC_9 = 28,			# Non-gamepad accessible button
+	MISC_10 = 29,			# Non-gamepad accessible button
 	L_TRIGGER = 30, 		# Pseudo button for left trigger axis
 	R_TRIGGER = 31, 		# Pseudo button for right trigger axis
-}
+	}
 ## Axis inputs
 enum AxisType {
 	NONE = -1,
@@ -110,20 +114,20 @@ enum AxisType {
 	R_STICK_Y = 3,
 	L_TRIGGER = 4,
 	R_TRIGGER = 5,
-}
+	}
 ## Joypad sticks
 enum Stick {
 	NONE = -1,
 	LEFT = 0,
 	RIGHT = 1,
-}
+	}
 ## Helper to determine type of device for UI
 enum GamepadType {
 	GENERIC,
 	XBOX,
 	SWITCH,
 	PLAYSTATION,
-}
+	}
 
 ## Connected devices, including keyboard
 var devices: Dictionary[int, StickeyDevice]
