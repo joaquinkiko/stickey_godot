@@ -245,9 +245,9 @@ func _input(event: InputEvent) -> void:
 		"InputEventMouseButton":
 			if mouse_mappings.has(event.button_index):
 				_update_button(KEYBOARD_INDEX, mouse_mappings[event.button_index], event.pressed)
-			match mouse_mappings[event.button_index]:
-				InputType.L_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.L_TRIGGER, float(event.pressed))
-				InputType.R_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.R_TRIGGER, float(event.pressed))
+				match mouse_mappings[event.button_index]:
+					InputType.L_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.L_TRIGGER, float(event.pressed))
+					InputType.R_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.R_TRIGGER, float(event.pressed))
 		"InputEventMouseMotion":
 			mouse_raw = event.relative * MOUSE_SENSITIVITY
 			mouse_raw = mouse_raw.clampf(-MOUSE_CLAMP, MOUSE_CLAMP)
@@ -366,3 +366,7 @@ func _update_axis(device: int, axis: AxisType, value: float) -> void:
 ## Stop vibrations on all devices
 func stop_all_rumble() -> void:
 	for joypad in Input.get_connected_joypads(): Input.stop_joy_vibration(joypad)
+
+func _physics_process(delta: float) -> void:
+	for x in devices.keys():
+		print(devices[x].get_debug_input())
