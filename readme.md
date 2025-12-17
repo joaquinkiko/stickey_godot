@@ -14,7 +14,6 @@ This plugin is designed for **[Godot 4.5+](https://godotengine.org/download)**
 - Axis modifiers (invert-Y, slow axis movement)
 - Simulated input for remote devices / serialize and deserialize input over network
 - Last input source (keyboard or shared gamepad) plus signal
-- Force stop all rumble function
 - Reset / clear settings function
 - List action keybindings function
 - Controller icons: gamepad / button / 
