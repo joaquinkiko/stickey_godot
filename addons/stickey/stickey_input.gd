@@ -17,16 +17,19 @@ class StickeyDevice extends RefCounted:
 	var index: int
 	## Device display name
 	var display_name: StringName
+	## Gamepad type
+	var type: GamepadType
+	
 	## Pressed input mask
-	var pressed_mask: int
+	var pressed_mask: int = 0
 	## Raw left stick direction
-	var l_stick_raw: Vector2
+	var l_stick_raw := Vector2.ZERO
 	## Raw right stick direction
-	var r_stick_raw: Vector2
+	var r_stick_raw := Vector2.ZERO
 	## Raw left trigger pressure
-	var l_trigger_raw: float
+	var l_trigger_raw: float = 0.0
 	## Raw right trigger pressure
-	var r_trigger_raw: float
+	var r_trigger_raw: float = 0.0
 	
 	## Returns true if input is pressed
 	func is_pressed(input: InputType) -> bool:
@@ -108,6 +111,13 @@ enum Stick {
 	LEFT = 0,
 	RIGHT = 1,
 }
+## Helper to determine type of device for UI
+enum GamepadType {
+	GENERIC,
+	XBOX,
+	SWITCH,
+	PLAYSTATION,
+}
 
 ## Connected devices, including keyboard
 var devices: Dictionary[int, StickeyDevice]
@@ -143,6 +153,10 @@ func _joy_connection_changed(index: int, connected: bool) -> void:
 		var device := StickeyDevice.new()
 		device.index = index
 		device.display_name = Input.get_joy_name(index)
+		if device.display_name.contains("Xbox"): device.type = GamepadType.XBOX
+		elif device.display_name.contains("Switch"): device.type = GamepadType.SWITCH
+		elif device.display_name.contains("PS"): device.type = GamepadType.PLAYSTATION
+		else: device.type = GamepadType.GENERIC
 		devices[index] = device
 		device_connected.emit(index)
 		print("Device connected: %s (%s)"%[device.display_name, index])
