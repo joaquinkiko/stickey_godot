@@ -83,6 +83,46 @@ class StickeyDevice extends RefCounted:
 	func rumble(weak_magnitude: float = 0.5, strong_magnitude: float = 0.3, length: float = 0.1) -> void:
 		if index < 0: return
 		Input.start_joy_vibration(index, weak_magnitude, strong_magnitude, length)
+	## Access input mask from [param frames_ago]. Returns 0 if older than input history
+	func get_old_input_mask(frames_ago: int) -> int:
+		frames_ago = clampi(frames_ago, 1, INPUT_HISTORY_BUFFER_SIZE - 1)
+		return input_history[(input_history_index - frames_ago + INPUT_HISTORY_BUFFER_SIZE) % INPUT_HISTORY_BUFFER_SIZE]
+	## Returns true if input was pressed within [param frames_ago].
+	func was_pressed(input: InputType, frames_ago: int = 1) -> bool:
+		frames_ago = clampi(frames_ago, 1, INPUT_HISTORY_BUFFER_SIZE)
+		for i in (frames_ago + 1):
+			if (get_old_input_mask(i + 1) & (1 << input) == 0) && (get_old_input_mask(i) & (1 << input) != 0):
+				return true
+		return false
+	## Returns true if input was released within [param frames_ago].
+	func was_released(input: InputType, frames_ago: int = 1) -> bool:
+		frames_ago = clampi(frames_ago, 1, INPUT_HISTORY_BUFFER_SIZE)
+		for i in (frames_ago + 1):
+			if (get_old_input_mask(i + 1) & (1 << input) != 0) && (get_old_input_mask(i) & (1 << input) == 0):
+				return true
+		return false
+	## Return true if input was just pressed this past frame
+	func was_just_pressed(input: InputType) -> bool:
+		return (get_old_input_mask(1) & (1 << input) == 0) && (pressed_mask & (1 << input) != 0)
+	## Return true if input was just released this past frame
+	func was_just_released(input: InputType) -> bool:
+		return (get_old_input_mask(1) & (1 << input) != 0) && (pressed_mask & (1 << input) == 0)
+	## Returns true if input is pressed, and has been pressed for at least [param frame_count] frames
+	func was_held_for(input: InputType, frame_count: int = 1) -> bool:
+		frame_count = clampi(frame_count, 1, INPUT_HISTORY_BUFFER_SIZE)
+		if !is_pressed(input): return false
+		for i in range(1, frame_count + 1):
+			if get_old_input_mask(i) & (1 << input) == 0:
+				return false
+		return true
+	## Returns number of times pressed within last [param frame_count] frames
+	func get_times_pressed(input: InputType, frame_count: int = 1) -> int:
+		var count: int = 0
+		frame_count = clampi(frame_count, 1, INPUT_HISTORY_BUFFER_SIZE)
+		for i in (frame_count + 1):
+			if (get_old_input_mask(i + 1) & (1 << input) == 0) && (get_old_input_mask(i) & (1 << input) != 0):
+				count += 1
+		return count
 
 ## Button inputs
 enum InputType {
@@ -272,8 +312,8 @@ func _process(delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	for device: StickeyDevice in devices.values():
-		device.input_history[device.input_history_index] = device.pressed_mask
 		device.input_history_index = (device.input_history_index + 1) % INPUT_HISTORY_BUFFER_SIZE
+		device.input_history[device.input_history_index] = device.pressed_mask
 
 ## Set default keyboard mappings
 func _initialize_default_keyboard_mappings() -> void:
