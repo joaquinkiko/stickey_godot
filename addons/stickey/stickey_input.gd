@@ -11,6 +11,7 @@ const MOUSE_DECAY: float = 10.0 # Should be > 0.0
 const MOUSE_CLAMP: float = 5.0 # Should be >= 1.0
 const SLOW_KEYBOARD_AXIS_MODIFIER = 0.5 # Should be > 0 and < 1
 const INPUT_HISTORY_BUFFER_SIZE: int = 60 # Should be >= 1
+const CONFIG_FILE_SECTION: StringName = &"InputMappings"
 
 ## Represents a connected device
 class StickeyDevice extends RefCounted:
@@ -140,6 +141,7 @@ enum InputType {
 	MISC_10 = 29,			# Non-gamepad accessible button
 	L_TRIGGER = 30, 		# Pseudo button for left trigger axis
 	R_TRIGGER = 31, 		# Pseudo button for right trigger axis
+	MAX = 32
 	}
 ## Axis inputs
 enum AxisType {
@@ -411,3 +413,107 @@ func _update_axis(device: int, axis: AxisType, value: float) -> void:
 ## Stop vibrations on all devices
 func stop_all_rumble() -> void:
 	for joypad in Input.get_connected_joypads(): Input.stop_joy_vibration(joypad)
+
+## Returns string for [enum InputType]
+func get_input_type_string(input: InputType) -> String:
+	match input:
+		InputType.SOUTH: return "South"
+		InputType.EAST: return "East"
+		InputType.WEST: return "West"
+		InputType.NORTH: return "North"
+		InputType.BACK: return "Back"
+		InputType.GUIDE: return "Guide"
+		InputType.START: return "Start"
+		InputType.L_STICK: return "Left Stick"
+		InputType.R_STICK: return "Right Stick"
+		InputType.L_SHOULDER: return "Left Shoulder"
+		InputType.R_SHOULDER: return "Right Shoulder"
+		InputType.UP_DIRECTION: return "D-Pad Up"
+		InputType.DOWN_DIRECTION: return "D-Pad Down"
+		InputType.LEFT_DIRECTION: return "D-Pad Left"
+		InputType.RIGHT_DIRECTION: return "D-Pad Right"
+		InputType.MISC_1: return "Misc 1"
+		InputType.PADDLE_1: return "Paddle 1"
+		InputType.PADDLE_2: return "Paddle 2"
+		InputType.PADDLE_3: return "Paddle 3"
+		InputType.PADDLE_4: return "Paddle 4"
+		InputType.TOUCH_PAD: return "Touch Pad"
+		InputType.MISC_2: return "Misc 2"
+		InputType.MISC_3: return "Misc 3"
+		InputType.MISC_4: return "Misc 4"
+		InputType.MISC_5: return "Misc 5"
+		InputType.MISC_6: return "Misc 6"
+		InputType.MISC_7: return "Misc 7"
+		InputType.MISC_8: return "Misc 8"
+		InputType.MISC_9: return "Misc 9"
+		InputType.MISC_10: return "Misc 10"
+		InputType.L_TRIGGER: return "Left Trigger"
+		InputType.R_TRIGGER: return "Right Trigger"
+		_: return "Invalid"
+
+## Returns string for [enum AxisType]
+func get_axis_type_string(axis: AxisType) -> String:
+	match axis:
+		AxisType.L_STICK_X: return "Left Stick X"
+		AxisType.L_STICK_Y: return "Left Stick Y"
+		AxisType.R_STICK_X: return "Right Stick X"
+		AxisType.R_STICK_Y: return "Right Stick Y"
+		AxisType.L_TRIGGER: return "Left Trigger"
+		AxisType.R_TRIGGER: return "Right Trigger"
+		_: return "Invalid"
+
+## Creates a [ConfigFile] for serializing input bindings.
+## This can later be loaded with [method deserialize_input_mappings].
+func serialize_input_mappings() -> ConfigFile:
+	var bindings: Dictionary[InputType, PackedStringArray]
+	for key in keyboard_mappings:
+		if !bindings.has(keyboard_mappings[key]): bindings[keyboard_mappings[key]] = []
+		bindings[keyboard_mappings[key]].append(OS.get_keycode_string(key))
+	for button in mouse_mappings:
+		if !bindings.has(mouse_mappings[button]): bindings[mouse_mappings[button]] = []
+		match button:
+			MOUSE_BUTTON_LEFT: bindings[mouse_mappings[button]].append("MouseLeft")
+			MOUSE_BUTTON_RIGHT: bindings[mouse_mappings[button]].append("MouseRight")
+			MOUSE_BUTTON_MIDDLE: bindings[mouse_mappings[button]].append("MouseMiddle")
+			MOUSE_BUTTON_WHEEL_UP: bindings[mouse_mappings[button]].append("MouseWheelUp")
+			MOUSE_BUTTON_WHEEL_DOWN: bindings[mouse_mappings[button]].append("MouseWheelDown")
+			MOUSE_BUTTON_WHEEL_LEFT: bindings[mouse_mappings[button]].append("MouseWheelLeft")
+			MOUSE_BUTTON_WHEEL_RIGHT: bindings[mouse_mappings[button]].append("MouseWheelRight")
+			MOUSE_BUTTON_XBUTTON1: bindings[mouse_mappings[button]].append("MouseExtra1")
+			MOUSE_BUTTON_XBUTTON2: bindings[mouse_mappings[button]].append("MouseExtra2")
+			_: bindings[mouse_mappings[button]].append("MouseUnknown")
+	var output := ConfigFile.new()
+	for input in bindings.keys():
+		output.set_value(CONFIG_FILE_SECTION, get_input_type_string(input), bindings[input])
+	return output
+
+## Deserializes input bindings from a [ConfigFile].
+## This will overwrite [member keyboard_mappings] and [member mouse_mappings].
+func deserialize_input_mappings(config: ConfigFile) -> void:
+	keyboard_mappings.clear()
+	mouse_mappings.clear()
+	var bindings: Dictionary[InputType, PackedStringArray]
+	for key in config.get_section_keys(CONFIG_FILE_SECTION):
+		var key_type: InputType = InputType.NONE
+		for input in InputType.MAX:
+			if get_input_type_string(input) == key:
+				key_type = input
+				break
+		if key_type == InputType.NONE: continue
+		bindings[key_type] = config.get_value(CONFIG_FILE_SECTION, key, []) as PackedStringArray
+	for input in bindings.keys():
+		for n in bindings[input].size():
+			if bindings[input][n].begins_with("Mouse"):
+				match bindings[input][n]:
+					"MouseLeft": mouse_mappings[MOUSE_BUTTON_LEFT] = input
+					"MouseRight": mouse_mappings[MOUSE_BUTTON_RIGHT] = input
+					"MouseMiddle": mouse_mappings[MOUSE_BUTTON_MIDDLE] = input
+					"MouseWheelUp": mouse_mappings[MOUSE_BUTTON_WHEEL_UP] = input
+					"MouseWheelDown": mouse_mappings[MOUSE_BUTTON_WHEEL_DOWN] = input
+					"MouseWheelLeft": mouse_mappings[MOUSE_BUTTON_WHEEL_LEFT] = input
+					"MouseWheelRight": mouse_mappings[MOUSE_BUTTON_WHEEL_RIGHT] = input
+					"MouseExtra1": mouse_mappings[MOUSE_BUTTON_XBUTTON1] = input
+					"MouseExtra2": mouse_mappings[MOUSE_BUTTON_XBUTTON2] = input
+					_: mouse_mappings[MOUSE_BUTTON_NONE] = input
+			else:
+				keyboard_mappings[OS.find_keycode_from_string(bindings[input][n])] = input
