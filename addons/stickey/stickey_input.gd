@@ -434,6 +434,14 @@ func get_input_type_string(input: InputType) -> String:
 		InputType.MISC_10: return "Misc 10"
 		InputType.L_TRIGGER: return "Left Trigger"
 		InputType.R_TRIGGER: return "Right Trigger"
+		InputType.L_STICK_UP: return "Left Stick Up"
+		InputType.L_STICK_DOWN: return "Left Stick Down"
+		InputType.L_STICK_LEFT: return "Left Stick Left"
+		InputType.L_STICK_RIGHT: return "Left Stick Right"
+		InputType.R_STICK_UP: return "Right Stick Up"
+		InputType.R_STICK_DOWN: return "Right Stick Down"
+		InputType.R_STICK_LEFT: return "Right Stick Left"
+		InputType.R_STICK_RIGHT: return "Right Stick Right"
 		_: return "Invalid"
 
 ## Returns string for [enum AxisType]
@@ -469,7 +477,7 @@ func serialize_input_mappings() -> ConfigFile:
 			_: bindings[mouse_mappings[button]].append("MouseUnknown")
 	var output := ConfigFile.new()
 	for input in bindings.keys():
-		output.set_value(CONFIG_FILE_SECTION, get_input_type_string(input), bindings[input])
+		output.set_value(CONFIG_FILE_SECTION, get_input_type_string(input).to_pascal_case(), bindings[input])
 	return output
 
 ## Deserializes input bindings from a [ConfigFile].
@@ -481,7 +489,7 @@ func deserialize_input_mappings(config: ConfigFile) -> void:
 	for key in config.get_section_keys(CONFIG_FILE_SECTION):
 		var key_type: int = -1
 		for input in 32:
-			if get_input_type_string(input) == key:
+			if get_input_type_string(input).to_pascal_case() == key:
 				key_type = input
 				break
 		if key_type == -1: continue
