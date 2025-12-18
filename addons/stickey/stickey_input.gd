@@ -43,7 +43,16 @@ class StickeyDevice extends RefCounted:
 			]
 	## Returns true if input is pressed
 	func is_pressed(input: InputType) -> bool:
-		return pressed_mask & (1 << input) != 0
+		match input:
+			InputType.L_STICK_UP: return l_stick_raw.x < 0
+			InputType.L_STICK_DOWN: return l_stick_raw.x > 0
+			InputType.L_STICK_LEFT: return l_stick_raw.y < 0
+			InputType.L_STICK_RIGHT: return l_stick_raw.y > 0
+			InputType.R_STICK_UP: return r_stick_raw.x < 0
+			InputType.R_STICK_DOWN: return r_stick_raw.x > 0
+			InputType.R_STICK_LEFT: return r_stick_raw.y < 0
+			InputType.R_STICK_RIGHT: return r_stick_raw.y > 0
+			_: return pressed_mask & (1 << input) != 0
 	## Returns left stick direction
 	func get_l_stick(normalized := true) -> Vector2:
 		var length := l_stick_raw.length()
@@ -90,10 +99,14 @@ class StickeyDevice extends RefCounted:
 	func get_age_of_history() -> int:
 		return Engine.get_physics_frames() - input_history.keys()[0]
 	## Checks if input was pressed [param frames_ago] physics process frames.
+	## Doesn't work for detecting stick directions.
 	func was_pressed(input: InputType, frames_ago: int) -> bool:
+		if input > 31: return false
 		return get_old_input_mask(frames_ago) & (1 << input) != 0
 	## Checks if input was released from pressed state [param frames_ago] physics process frames.
+	## Doesn't work for detecting stick directions.
 	func was_released(input: InputType, frames_ago: int) -> bool:
+		if input > 31: return false
 		var was_pressed: bool = false
 		for i in frames_ago:
 			if was_pressed:
@@ -101,7 +114,9 @@ class StickeyDevice extends RefCounted:
 			elif !was_pressed(input, i): return true
 		return false
 	## Returns true if input was pressed for [param frames_ago] physics process frames.
+	## Doesn't work for detecting stick directions.
 	func was_held(input: InputType, frames_ago: int) -> bool:
+		if input > 31: return false
 		for i in frames_ago:
 			if !was_pressed(input, i): return false
 		return true
@@ -339,7 +354,7 @@ func _initialize_default_keyboard_mappings() -> void:
 
 ## Updates device [member StickeyDevice.pressed_mask]
 func _update_button(device: int, input: InputType, pressed: bool) -> void:
-	if input < 0 || input > 31: return
+	if input > 31: return
 	var bit := 1 << int(input)
 	if pressed: devices[device].pressed_mask |= bit
 	else: devices[device].pressed_mask &= ~bit
