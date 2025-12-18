@@ -108,7 +108,6 @@ class StickeyDevice extends RefCounted:
 
 ## Button inputs
 enum InputType {
-	NONE = -1,
 	SOUTH = 0, 				# Bottom face button / Xbox: A Button
 	EAST = 1, 				# Right face button / Xbox: B Button
 	WEST = 2, 				# Left face button / Xbox: X Button
@@ -141,11 +140,17 @@ enum InputType {
 	MISC_10 = 29,			# Non-gamepad accessible button
 	L_TRIGGER = 30, 		# Pseudo button for left trigger axis
 	R_TRIGGER = 31, 		# Pseudo button for right trigger axis
-	MAX = 32
+	L_STICK_UP = 60,		# Pseudo button for left stick axis Y (not recorded to input mask)
+	L_STICK_DOWN = 61,		# Pseudo button for left stick axis Y (not recorded to input mask)
+	L_STICK_LEFT = 62,		# Pseudo button for left stick axis X (not recorded to input mask)
+	L_STICK_RIGHT = 63,		# Pseudo button for left stick axis X (not recorded to input mask)
+	R_STICK_UP = 64,		# Pseudo button for right stick axis Y (not recorded to input mask)
+	R_STICK_DOWN = 65,		# Pseudo button for right stick axis Y (not recorded to input mask)
+	R_STICK_LEFT = 66,		# Pseudo button for right stick axis X (not recorded to input mask)
+	R_STICK_RIGHT = 67,		# Pseudo button for right stick axis X (not recorded to input mask)
 	}
 ## Axis inputs
 enum AxisType {
-	NONE = -1,
 	L_STICK_X = 0,
 	L_STICK_Y = 1,
 	R_STICK_X = 2,
@@ -175,10 +180,6 @@ var keyboard_shared_device: int = 0
 var mouse_raw := Vector2.ZERO
 ## Stick to translate mouse motion too
 var mouse_stick: Stick = Stick.RIGHT
-## Stick to translate WASD keys too
-var wasd_stick: Stick = Stick.LEFT
-## Stick to translate directional keys too
-var directional_keys_stick: Stick = Stick.NONE
 ## Key mappings for inputs
 var keyboard_mappings: Dictionary[Key, InputType]
 ## Mouse button mappings for inputs
@@ -217,72 +218,19 @@ func _input(event: InputEvent) -> void:
 	if event.is_echo(): return
 	match event.get_class():
 		"InputEventKey":
-			# Handle keyboard mapped axis
-			match event.keycode:
-				# Handle WASD mapped axis
-				KEY_W, KEY_A, KEY_S, KEY_D:
-					if wasd_stick != Stick.NONE:
-						match event.keycode:
-							KEY_W:
-								match wasd_stick:
-									Stick.LEFT:
-										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -int(event.pressed))
-									Stick.RIGHT:
-										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -int(event.pressed))
-							KEY_S:
-								match wasd_stick:
-									Stick.LEFT:
-										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, int(event.pressed))
-									Stick.RIGHT:
-										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, int(event.pressed))
-							KEY_A:
-								match wasd_stick:
-									Stick.LEFT:
-										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -int(event.pressed))
-									Stick.RIGHT:
-										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -int(event.pressed))
-							KEY_D:
-								match wasd_stick:
-									Stick.LEFT:
-										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, int(event.pressed))
-									Stick.RIGHT:
-										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, int(event.pressed))
-						return
-				# Handle directional key mapped axis
-				KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT:
-					if directional_keys_stick != Stick.NONE:
-						match event.keycode:
-							KEY_UP:
-								match directional_keys_stick:
-									Stick.LEFT:
-										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -int(event.pressed))
-									Stick.RIGHT:
-										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -int(event.pressed))
-							KEY_DOWN:
-								match directional_keys_stick:
-									Stick.LEFT:
-										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, int(event.pressed))
-									Stick.RIGHT:
-										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, int(event.pressed))
-							KEY_LEFT:
-								match directional_keys_stick:
-									Stick.LEFT:
-										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -int(event.pressed))
-									Stick.RIGHT:
-										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -int(event.pressed))
-							KEY_RIGHT:
-								match directional_keys_stick:
-									Stick.LEFT:
-										_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, int(event.pressed))
-									Stick.RIGHT:
-										_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, int(event.pressed))
-						return
-			# Handle mapped input events
 			if keyboard_mappings.has(event.keycode):
 				_update_button(KEYBOARD_INDEX, keyboard_mappings[event.keycode], event.pressed)
 				match keyboard_mappings[event.keycode]:
 					InputType.L_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.L_TRIGGER, float(event.pressed))
 					InputType.R_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.R_TRIGGER, float(event.pressed))
+					InputType.L_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -float(event.pressed))
+					InputType.L_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, float(event.pressed))
+					InputType.L_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -float(event.pressed))
+					InputType.L_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, float(event.pressed))
+					InputType.R_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -float(event.pressed))
+					InputType.R_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, float(event.pressed))
+					InputType.R_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -float(event.pressed))
+					InputType.R_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, float(event.pressed))
 				return
 		"InputEventMouseButton":
 			if mouse_mappings.has(event.button_index):
@@ -290,6 +238,14 @@ func _input(event: InputEvent) -> void:
 				match mouse_mappings[event.button_index]:
 					InputType.L_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.L_TRIGGER, float(event.pressed))
 					InputType.R_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.R_TRIGGER, float(event.pressed))
+					InputType.L_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -float(event.pressed))
+					InputType.L_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, float(event.pressed))
+					InputType.L_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -float(event.pressed))
+					InputType.L_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, float(event.pressed))
+					InputType.R_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -float(event.pressed))
+					InputType.R_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, float(event.pressed))
+					InputType.R_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -float(event.pressed))
+					InputType.R_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, float(event.pressed))
 		"InputEventMouseMotion":
 			mouse_raw = event.relative * MOUSE_SENSITIVITY
 			mouse_raw = mouse_raw.clampf(-MOUSE_CLAMP, MOUSE_CLAMP)
@@ -375,9 +331,15 @@ func _initialize_default_keyboard_mappings() -> void:
 	
 	mouse_mappings[MOUSE_BUTTON_WHEEL_UP] = InputType.UP_DIRECTION
 	mouse_mappings[MOUSE_BUTTON_WHEEL_DOWN] = InputType.DOWN_DIRECTION
+	
+	keyboard_mappings[KEY_W] = InputType.L_STICK_UP
+	keyboard_mappings[KEY_A] = InputType.L_STICK_LEFT
+	keyboard_mappings[KEY_S] = InputType.L_STICK_DOWN
+	keyboard_mappings[KEY_D] = InputType.L_STICK_RIGHT
 
 ## Updates device [member StickeyDevice.pressed_mask]
 func _update_button(device: int, input: InputType, pressed: bool) -> void:
+	if input < 0 || input > 31: return
 	var bit := 1 << int(input)
 	if pressed: devices[device].pressed_mask |= bit
 	else: devices[device].pressed_mask &= ~bit
@@ -494,12 +456,12 @@ func deserialize_input_mappings(config: ConfigFile) -> void:
 	mouse_mappings.clear()
 	var bindings: Dictionary[InputType, PackedStringArray]
 	for key in config.get_section_keys(CONFIG_FILE_SECTION):
-		var key_type: InputType = InputType.NONE
-		for input in InputType.MAX:
+		var key_type: int = -1
+		for input in 32:
 			if get_input_type_string(input) == key:
 				key_type = input
 				break
-		if key_type == InputType.NONE: continue
+		if key_type == -1: continue
 		bindings[key_type] = config.get_value(CONFIG_FILE_SECTION, key, []) as PackedStringArray
 	for input in bindings.keys():
 		for n in bindings[input].size():
