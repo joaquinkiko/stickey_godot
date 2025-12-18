@@ -155,14 +155,14 @@ enum InputType {
 	MISC_10 = 29,			# Non-gamepad accessible button
 	L_TRIGGER = 30, 		# Pseudo button for left trigger axis
 	R_TRIGGER = 31, 		# Pseudo button for right trigger axis
-	L_STICK_UP = 60,		# Pseudo button for left stick axis Y (not recorded to input mask)
-	L_STICK_DOWN = 61,		# Pseudo button for left stick axis Y (not recorded to input mask)
-	L_STICK_LEFT = 62,		# Pseudo button for left stick axis X (not recorded to input mask)
-	L_STICK_RIGHT = 63,		# Pseudo button for left stick axis X (not recorded to input mask)
-	R_STICK_UP = 64,		# Pseudo button for right stick axis Y (not recorded to input mask)
-	R_STICK_DOWN = 65,		# Pseudo button for right stick axis Y (not recorded to input mask)
-	R_STICK_LEFT = 66,		# Pseudo button for right stick axis X (not recorded to input mask)
-	R_STICK_RIGHT = 67,		# Pseudo button for right stick axis X (not recorded to input mask)
+	L_STICK_UP = 56,		# Pseudo button for left stick axis Y (not recorded to input mask)
+	L_STICK_DOWN = 57,		# Pseudo button for left stick axis Y (not recorded to input mask)
+	L_STICK_LEFT = 58,		# Pseudo button for left stick axis X (not recorded to input mask)
+	L_STICK_RIGHT = 59,		# Pseudo button for left stick axis X (not recorded to input mask)
+	R_STICK_UP = 60,		# Pseudo button for right stick axis Y (not recorded to input mask)
+	R_STICK_DOWN = 61,		# Pseudo button for right stick axis Y (not recorded to input mask)
+	R_STICK_LEFT = 62,		# Pseudo button for right stick axis X (not recorded to input mask)
+	R_STICK_RIGHT = 63,		# Pseudo button for right stick axis X (not recorded to input mask)
 	}
 ## Axis inputs
 enum AxisType {
