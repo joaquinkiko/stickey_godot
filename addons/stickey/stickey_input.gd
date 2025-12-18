@@ -41,7 +41,7 @@ class StickeyDevice extends RefCounted:
 		return "LS:%s RS:%s LT:%s RT:%s B:%s"%[
 			get_l_stick(), get_r_stick(), get_l_trigger(), get_r_trigger(), pressed_mask
 			]
-	## Returns true if input is pressed
+	## Returns true if input is currently being pressed
 	func is_pressed(input: InputType) -> bool:
 		match input:
 			InputType.L_STICK_UP: return l_stick_raw.x < 0
