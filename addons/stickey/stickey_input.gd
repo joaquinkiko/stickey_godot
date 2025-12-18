@@ -58,7 +58,7 @@ class StickeyDevice extends RefCounted:
 		var length := l_stick_raw.length()
 		if length <= STICK_DEADZONE: return Vector2.ZERO
 		if normalized:
-			return l_stick_raw.normalized()
+			return l_stick_raw.normalized() * length
 		else:
 			return l_stick_raw
 	## Returns right stick direction
@@ -66,7 +66,7 @@ class StickeyDevice extends RefCounted:
 		var length := r_stick_raw.length()
 		if length <= STICK_DEADZONE: return Vector2.ZERO
 		if normalized:
-			return r_stick_raw.normalized()
+			return r_stick_raw.normalized() * length
 		else:
 			return r_stick_raw
 	## Returns left trigger pressure
