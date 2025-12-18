@@ -7,18 +7,15 @@ This plugin is designed for **[Godot 4.5+](https://godotengine.org/download)**
 ## TODO:
 - Project settings for constants
 - Keyboard default bindings project settings
-- Keyboard bindings serializing / deserializing
 - Gamepad alternate mappings (translate button to different button)
 - Axis modifiers (invert-Y, slow axis movement)
 - Simulated input for remote devices / serialize and deserialize input over network
 - Last input source (keyboard or shared gamepad) plus signal
-- Reset / clear settings function
 - List action keybindings function
 - Controller icons: gamepad / button / 
 - Keyboard and mouse icons
 - Get action icon(s)
 - Get action input key/button display name
-- Extend to max of 32 input actions
 - Pause input reading per device
 - Control mouse with gamepad
 - Gamepad based typing pop-up
@@ -27,7 +24,7 @@ This plugin is designed for **[Godot 4.5+](https://godotengine.org/download)**
 - Don't accept input while not in focus
 - Touch based input / vibration
 - Disable keyboard for non PC devices
-- Key rebinding helper (Max alternative bindings per action, should swap old action, should allow WASD)
+- Key rebinding helper (Max alternative bindings per action, should swap old action)
 - Add/remove player
 - Assign devices to players
 - signal if player disconnects device
