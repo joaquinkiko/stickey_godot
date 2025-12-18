@@ -210,12 +210,13 @@ signal device_connected(index: int)
 signal device_disconnected(index: int)
 
 func _init() -> void:
-	devices[KEYBOARD_INDEX] = StickeyDevice.new()
-	devices[KEYBOARD_INDEX].index = KEYBOARD_INDEX
-	devices[KEYBOARD_INDEX].display_name = &"Keyboard"
-	devices[KEYBOARD_INDEX].type = GamepadType.KEYBOARD
-	devices[KEYBOARD_INDEX].input_history.resize(INPUT_HISTORY_BUFFER_SIZE)
-	_initialize_default_keyboard_mappings()
+	match OS.get_name():
+		"Windows", "macOS", "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD", "Web":
+			connect_keyboard_device()
+		"Android", "iOS":
+			pass ## Eventually this is where we could initialize touch screen input?
+		_:
+			pass ## This would be unaccounted for custom console builds
 	Input.joy_connection_changed.connect(_joy_connection_changed)
 
 func _joy_connection_changed(index: int, connected: bool) -> void:
@@ -240,6 +241,7 @@ func _input(event: InputEvent) -> void:
 	if event.is_echo(): return
 	match event.get_class():
 		"InputEventKey":
+			if !devices.has(KEYBOARD_INDEX): return
 			if keyboard_mappings.has(event.keycode):
 				_update_button(KEYBOARD_INDEX, keyboard_mappings[event.keycode], event.pressed)
 				match keyboard_mappings[event.keycode]:
@@ -255,6 +257,7 @@ func _input(event: InputEvent) -> void:
 					InputType.R_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, float(event.pressed))
 				return
 		"InputEventMouseButton":
+			if !devices.has(KEYBOARD_INDEX): return
 			if mouse_mappings.has(event.button_index):
 				_update_button(KEYBOARD_INDEX, mouse_mappings[event.button_index], event.pressed)
 				match mouse_mappings[event.button_index]:
@@ -269,6 +272,7 @@ func _input(event: InputEvent) -> void:
 					InputType.R_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -float(event.pressed))
 					InputType.R_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, float(event.pressed))
 		"InputEventMouseMotion":
+			if !devices.has(KEYBOARD_INDEX): return
 			mouse_raw = event.relative * MOUSE_SENSITIVITY
 			mouse_raw = mouse_raw.clampf(-MOUSE_CLAMP, MOUSE_CLAMP)
 			match mouse_stick:
@@ -314,6 +318,16 @@ func _physics_process(delta: float) -> void:
 	for device: StickeyDevice in devices.values():
 		device.input_history_index = (device.input_history_index + 1) % INPUT_HISTORY_BUFFER_SIZE
 		device.input_history[device.input_history_index] = device.pressed_mask
+
+## Adds keyboard device. This is typically done automatically on initialization, 
+## and shouldn't need to be recalled unless keyboard was manually disconnected.
+func connect_keyboard_device() -> void:
+	devices[KEYBOARD_INDEX] = StickeyDevice.new()
+	devices[KEYBOARD_INDEX].index = KEYBOARD_INDEX
+	devices[KEYBOARD_INDEX].display_name = &"Keyboard"
+	devices[KEYBOARD_INDEX].type = GamepadType.KEYBOARD
+	devices[KEYBOARD_INDEX].input_history.resize(INPUT_HISTORY_BUFFER_SIZE)
+	_initialize_default_keyboard_mappings()
 
 ## Set default keyboard mappings
 func _initialize_default_keyboard_mappings() -> void:
