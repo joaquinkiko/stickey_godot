@@ -3,8 +3,8 @@ extends Node
 const KEYBOARD_INDEX: int = -1
 const TRIGGER_PRESS_THRESHOLD: float = 0.7 # Should not be >= 1.0
 const TRIGGER_RELEASE_THRESHOLD: float = 0.5 # Should not be <= 0.0
-const STICK_INPUT_THRESHOLD: float = 0.001 # Should not be <= 0.0
-const STICK_DEADZONE: float = 0.3 # Should not be < 0.0
+const STICK_INPUT_THRESHOLD: float = 0.0001 # Should not be <= 0.0
+const STICK_DEADZONE: float = 0.05 # Should not be < 0.0
 const TRIGGER_DEADZONE: float = 0.3 # Should not be < 0.0
 const MOUSE_SENSITIVITY: float = 0.3 # Should be > 0.0
 const MOUSE_DECAY: float = 10.0 # Should be > 0.0
@@ -238,14 +238,14 @@ func _input(event: InputEvent) -> void:
 				match keyboard_mappings[event.keycode]:
 					InputType.L_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.L_TRIGGER, float(event.pressed))
 					InputType.R_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.R_TRIGGER, float(event.pressed))
-					InputType.L_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -float(event.pressed))
-					InputType.L_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, float(event.pressed))
-					InputType.L_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -float(event.pressed))
-					InputType.L_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, float(event.pressed))
-					InputType.R_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -float(event.pressed))
-					InputType.R_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, float(event.pressed))
-					InputType.R_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -float(event.pressed))
-					InputType.R_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, float(event.pressed))
+					InputType.L_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -float(event.pressed))
+					InputType.L_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, float(event.pressed))
+					InputType.L_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -float(event.pressed))
+					InputType.L_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, float(event.pressed))
+					InputType.R_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -float(event.pressed))
+					InputType.R_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, float(event.pressed))
+					InputType.R_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -float(event.pressed))
+					InputType.R_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, float(event.pressed))
 				return
 		"InputEventMouseButton":
 			if mouse_mappings.has(event.button_index):
@@ -253,14 +253,14 @@ func _input(event: InputEvent) -> void:
 				match mouse_mappings[event.button_index]:
 					InputType.L_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.L_TRIGGER, float(event.pressed))
 					InputType.R_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.R_TRIGGER, float(event.pressed))
-					InputType.L_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -float(event.pressed))
-					InputType.L_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, float(event.pressed))
-					InputType.L_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -float(event.pressed))
-					InputType.L_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, float(event.pressed))
-					InputType.R_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -float(event.pressed))
-					InputType.R_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, float(event.pressed))
-					InputType.R_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -float(event.pressed))
-					InputType.R_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, float(event.pressed))
+					InputType.L_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -float(event.pressed))
+					InputType.L_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, float(event.pressed))
+					InputType.L_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -float(event.pressed))
+					InputType.L_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, float(event.pressed))
+					InputType.R_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -float(event.pressed))
+					InputType.R_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, float(event.pressed))
+					InputType.R_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -float(event.pressed))
+					InputType.R_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, float(event.pressed))
 		"InputEventMouseMotion":
 			mouse_raw = event.relative * MOUSE_SENSITIVITY
 			mouse_raw = mouse_raw.clampf(-MOUSE_CLAMP, MOUSE_CLAMP)
