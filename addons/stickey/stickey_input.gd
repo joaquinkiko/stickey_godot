@@ -1,15 +1,15 @@
 extends Node
 
 const KEYBOARD_INDEX: int = -1
+const STICK_INPUT_THRESHOLD: float = 0.0001
+# DELETE FOLLOWING CONSTANTS
 const TRIGGER_PRESS_THRESHOLD: float = 0.7 # Should not be >= 1.0
 const TRIGGER_RELEASE_THRESHOLD: float = 0.5 # Should not be <= 0.0
-const STICK_INPUT_THRESHOLD: float = 0.0001 # Should not be <= 0.0
 const STICK_DEADZONE: float = 0.05 # Should not be < 0.0
 const TRIGGER_DEADZONE: float = 0.3 # Should not be < 0.0
 const MOUSE_SENSITIVITY: float = 0.3 # Should be > 0.0
 const MOUSE_DECAY: float = 10.0 # Should be > 0.0
 const MOUSE_CLAMP: float = 5.0 # Should be >= 1.0
-const SLOW_KEYBOARD_AXIS_MODIFIER = 0.5 # Should be > 0 and < 1
 const INPUT_HISTORY_BUFFER_SIZE: int = 60 # Should be >= 1
 const CONFIG_FILE_SECTION: StringName = &"InputMappings"
 
