@@ -195,6 +195,8 @@ enum GamepadType {
 var devices: Dictionary[int, StickeyDevice]
 ## Device index to share keyboard input with-- use -1 to not share
 var keyboard_shared_device: int = 0
+## When true keyboard device has been used more recently than [member keyboard_shared_device]
+var is_keyboard_primary: bool = false
 ## Raw mouse motion
 var mouse_raw := Vector2.ZERO
 ## Stick to translate mouse motion too
@@ -208,11 +210,14 @@ var mouse_mappings: Dictionary[MouseButton, InputType]
 signal device_connected(index: int)
 ## Emitted when device is disconnected
 signal device_disconnected(index: int)
+## Emitted when [member keyboard_shared_device] swaps between keyboard and gamepad as current device
+signal primary_device_changed(is_keyboard: bool)
 
 func _init() -> void:
 	match OS.get_name():
 		"Windows", "macOS", "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD", "Web":
 			connect_keyboard_device()
+			is_keyboard_primary = Input.get_connected_joypads().is_empty()
 		"Android", "iOS":
 			pass ## Eventually this is where we could initialize touch screen input?
 		_:
@@ -232,9 +237,15 @@ func _joy_connection_changed(index: int, connected: bool) -> void:
 		devices[index] = device
 		device_connected.emit(index)
 		print("Device connected: %s (%s)"%[device.display_name, index])
+		if keyboard_shared_device == index && is_keyboard_primary:
+			is_keyboard_primary = false
+			primary_device_changed.emit(false)
 	else:
 		device_disconnected.emit(index)
 		print("Device disconnected: %s (%s)"%[devices[index].display_name, index])
+		if keyboard_shared_device == index && !is_keyboard_primary:
+			is_keyboard_primary = true
+			primary_device_changed.emit(true)
 		devices.erase(index)
 
 func _input(event: InputEvent) -> void:
@@ -242,6 +253,9 @@ func _input(event: InputEvent) -> void:
 	match event.get_class():
 		"InputEventKey":
 			if !devices.has(KEYBOARD_INDEX): return
+			if !is_keyboard_primary:
+				is_keyboard_primary = true
+				primary_device_changed.emit(true)
 			if keyboard_mappings.has(event.keycode):
 				_update_button(KEYBOARD_INDEX, keyboard_mappings[event.keycode], event.pressed)
 				match keyboard_mappings[event.keycode]:
@@ -258,6 +272,9 @@ func _input(event: InputEvent) -> void:
 				return
 		"InputEventMouseButton":
 			if !devices.has(KEYBOARD_INDEX): return
+			if !is_keyboard_primary:
+				is_keyboard_primary = true
+				primary_device_changed.emit(true)
 			if mouse_mappings.has(event.button_index):
 				_update_button(KEYBOARD_INDEX, mouse_mappings[event.button_index], event.pressed)
 				match mouse_mappings[event.button_index]:
@@ -273,6 +290,9 @@ func _input(event: InputEvent) -> void:
 					InputType.R_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, float(event.pressed))
 		"InputEventMouseMotion":
 			if !devices.has(KEYBOARD_INDEX): return
+			if !is_keyboard_primary:
+				is_keyboard_primary = true
+				primary_device_changed.emit(true)
 			mouse_raw = event.relative * MOUSE_SENSITIVITY
 			mouse_raw = mouse_raw.clampf(-MOUSE_CLAMP, MOUSE_CLAMP)
 			match mouse_stick:
@@ -284,9 +304,15 @@ func _input(event: InputEvent) -> void:
 					_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, mouse_raw.y)
 		"InputEventJoypadButton":
 			if !Input.get_connected_joypads().has(event.device): return
+			if event.device == keyboard_shared_device && is_keyboard_primary:
+				is_keyboard_primary = false
+				primary_device_changed.emit(false)
 			_update_button(event.device, event.button_index, event.pressed)
 		"InputEventJoypadMotion":
 			if !Input.get_connected_joypads().has(event.device): return
+			if event.device == keyboard_shared_device && is_keyboard_primary:
+				is_keyboard_primary = false
+				primary_device_changed.emit(false)
 			_update_axis(event.device, event.axis, event.axis_value)
 			# Update button masks
 			match event.axis:
