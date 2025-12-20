@@ -2,25 +2,25 @@
 extends EditorPlugin
 
 const SETTING_BASE_NAME := "stickey_input"
-const SETTING_NAME_TRIGGER_PRESS_THRESHOLD := "%s/joystick/trigger/press_threshold"%SETTING_BASE_NAME
+const SETTING_NAME_TRIGGER_PRESS_THRESHOLD := "stickey_input/joystick/trigger/press_threshold"
 const SETTING_VALUE_TRIGGER_PRESS_THRESHOLD := 0.50
-const SETTING_NAME_TRIGGER_RELEASE_THRESHOLD := "%s/joystick/trigger/release_threshold"%SETTING_BASE_NAME
+const SETTING_NAME_TRIGGER_RELEASE_THRESHOLD := "stickey_input/joystick/trigger/release_threshold"
 const SETTING_VALUE_TRIGGER_RELEASE_THRESHOLD := 0.70
-const SETTING_NAME_LEFT_STICK_DEADZONE := "%s/joystick/left_stick/deadzone"%SETTING_BASE_NAME
+const SETTING_NAME_LEFT_STICK_DEADZONE := "stickey_input/joystick/left_stick/deadzone"
 const SETTING_VALUE_LEFT_STICK_DEADZONE := 0.05
-const SETTING_NAME_RIGHT_STICK_DEADZONE := "%s/joystick/right_stick/deadzone"%SETTING_BASE_NAME
+const SETTING_NAME_RIGHT_STICK_DEADZONE := "stickey_input/joystick/right_stick/deadzone"
 const SETTING_VALUE_RIGHT_STICK_DEADZONE := 0.05
-const SETTING_NAME_TRIGGER_DEADZONE := "%s/joystick/trigger/deadzone"%SETTING_BASE_NAME
+const SETTING_NAME_TRIGGER_DEADZONE := "stickey_input/joystick/trigger/deadzone"
 const SETTING_VALUE_TRIGGER_DEADZONE := 0.30
-const SETTING_NAME_MOUSE_SENSITIVITY := "%s/mouse/sensitivity"%SETTING_BASE_NAME
+const SETTING_NAME_MOUSE_SENSITIVITY := "stickey_input/keyboard_and_mouse/mouse/sensitivity"
 const SETTING_VALUE_MOUSE_SENSITIVITY := 0.30
-const SETTING_NAME_MOUSE_DECAY := "%s/mouse/decay_rate"%SETTING_BASE_NAME
+const SETTING_NAME_MOUSE_DECAY := "stickey_input/keyboard_and_mouse/mouse/decay_rate"
 const SETTING_VALUE_MOUSE_DECAY := 10.0
-const SETTING_NAME_MOUSE_CLAMP := "%s/mouse/max_speed"%SETTING_BASE_NAME
+const SETTING_NAME_MOUSE_CLAMP :=  "stickey_input/keyboard_and_mouse/mouse/max_speed"
 const SETTING_VALUE_MOUSE_CLAMP := 5.0
-const SETTING_NAME_INPUT_HISTORY_BUFFER_SIZE := "%s/general/input_history/buffer_frames"%SETTING_BASE_NAME
+const SETTING_NAME_INPUT_HISTORY_BUFFER_SIZE := "stickey_input/general/input_history/buffer_frames"
 const SETTING_VALUE_INPUT_HISTORY_BUFFER_SIZE := 60
-const SETTING_NAME_CONFIG_FILE_SECTION := "%s/general/serialization/section_key"%SETTING_BASE_NAME
+const SETTING_NAME_CONFIG_FILE_SECTION := "stickey_input/general/serialization/section_key"
 const SETTING_VALUE_CONFIG_FILE_SECTION := "InputMappings"
 
 func _enable_plugin() -> void:
