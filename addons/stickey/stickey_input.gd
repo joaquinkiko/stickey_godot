@@ -1,17 +1,6 @@
 extends Node
 
 const KEYBOARD_INDEX: int = -1
-const STICK_INPUT_THRESHOLD: float = 0.0001
-# DELETE FOLLOWING CONSTANTS
-const TRIGGER_PRESS_THRESHOLD: float = 0.7 # Should not be >= 1.0
-const TRIGGER_RELEASE_THRESHOLD: float = 0.5 # Should not be <= 0.0
-const STICK_DEADZONE: float = 0.05 # Should not be < 0.0
-const TRIGGER_DEADZONE: float = 0.3 # Should not be < 0.0
-const MOUSE_SENSITIVITY: float = 0.3 # Should be > 0.0
-const MOUSE_DECAY: float = 10.0 # Should be > 0.0
-const MOUSE_CLAMP: float = 5.0 # Should be >= 1.0
-const INPUT_HISTORY_BUFFER_SIZE: int = 60 # Should be >= 1
-const CONFIG_FILE_SECTION: StringName = &"InputMappings"
 
 ## Represents a connected device
 class StickeyDevice extends RefCounted:
@@ -58,26 +47,26 @@ class StickeyDevice extends RefCounted:
 	## Returns left stick direction
 	func get_l_stick(normalized := true) -> Vector2:
 		var length := l_stick_raw.length()
-		if length <= STICK_DEADZONE: return Vector2.ZERO
+		if length <= StickeyInputManager.left_stick_deadzone: return Vector2.ZERO
 		if normalized:
-			return l_stick_raw.normalized() * clampf((length - STICK_DEADZONE) / (1.0 - STICK_DEADZONE), 0, 1)
+			return l_stick_raw.normalized() * clampf((length - StickeyInputManager.left_stick_deadzone) / (1.0 - StickeyInputManager.left_stick_deadzone), 0, 1)
 		else:
 			return l_stick_raw
 	## Returns right stick direction
 	func get_r_stick(normalized := true) -> Vector2:
 		var length := r_stick_raw.length()
-		if length <= STICK_DEADZONE: return Vector2.ZERO
+		if length <= StickeyInputManager.right_stick_deadzone: return Vector2.ZERO
 		if normalized:
-			return r_stick_raw.normalized() * clampf((length - STICK_DEADZONE) / (1.0 - STICK_DEADZONE), 0, 1)
+			return r_stick_raw.normalized() * clampf((length - StickeyInputManager.right_stick_deadzone) / (1.0 - StickeyInputManager.right_stick_deadzone), 0, 1)
 		else:
 			return r_stick_raw
 	## Returns left trigger pressure
 	func get_l_trigger() -> float:
-		if l_trigger_raw <= TRIGGER_DEADZONE: return 0
+		if l_trigger_raw <= StickeyInputManager.trigger_deadzone: return 0
 		else: return l_trigger_raw
 	## Returns right trigger pressure
 	func get_r_trigger() -> float:
-		if r_trigger_raw <= TRIGGER_DEADZONE: return 0
+		if r_trigger_raw <= StickeyInputManager.trigger_deadzone: return 0
 		else: return r_trigger_raw
 	## Applies vibration to gamepad
 	func rumble(weak_magnitude: float = 0.5, strong_magnitude: float = 0.3, length: float = 0.1) -> void:
@@ -85,18 +74,18 @@ class StickeyDevice extends RefCounted:
 		Input.start_joy_vibration(index, weak_magnitude, strong_magnitude, length)
 	## Access input mask from [param frames_ago]. Returns 0 if older than input history
 	func get_old_input_mask(frames_ago: int) -> int:
-		frames_ago = clampi(frames_ago, 1, INPUT_HISTORY_BUFFER_SIZE - 1)
-		return input_history[(input_history_index - frames_ago + INPUT_HISTORY_BUFFER_SIZE) % INPUT_HISTORY_BUFFER_SIZE]
+		frames_ago = clampi(frames_ago, 1, StickeyInputManager.input_history_buffer_size - 1)
+		return input_history[(input_history_index - frames_ago + StickeyInputManager.input_history_buffer_size) % StickeyInputManager.input_history_buffer_size]
 	## Returns true if input was pressed within [param frames_ago].
 	func was_pressed(input: InputType, frames_ago: int = 1) -> bool:
-		frames_ago = clampi(frames_ago, 1, INPUT_HISTORY_BUFFER_SIZE)
+		frames_ago = clampi(frames_ago, 1, StickeyInputManager.input_history_buffer_size)
 		for i in (frames_ago + 1):
 			if (get_old_input_mask(i + 1) & (1 << input) == 0) && (get_old_input_mask(i) & (1 << input) != 0):
 				return true
 		return false
 	## Returns true if input was released within [param frames_ago].
 	func was_released(input: InputType, frames_ago: int = 1) -> bool:
-		frames_ago = clampi(frames_ago, 1, INPUT_HISTORY_BUFFER_SIZE)
+		frames_ago = clampi(frames_ago, 1, StickeyInputManager.input_history_buffer_size)
 		for i in (frames_ago + 1):
 			if (get_old_input_mask(i + 1) & (1 << input) != 0) && (get_old_input_mask(i) & (1 << input) == 0):
 				return true
@@ -109,7 +98,7 @@ class StickeyDevice extends RefCounted:
 		return (get_old_input_mask(1) & (1 << input) != 0) && (pressed_mask & (1 << input) == 0)
 	## Returns true if input is pressed, and has been pressed for at least [param frame_count] frames
 	func was_held_for(input: InputType, frame_count: int = 1) -> bool:
-		frame_count = clampi(frame_count, 1, INPUT_HISTORY_BUFFER_SIZE)
+		frame_count = clampi(frame_count, 1, StickeyInputManager.input_history_buffer_size)
 		if !is_pressed(input): return false
 		for i in range(1, frame_count + 1):
 			if get_old_input_mask(i) & (1 << input) == 0:
@@ -118,7 +107,7 @@ class StickeyDevice extends RefCounted:
 	## Returns number of times pressed within last [param frame_count] frames
 	func get_times_pressed(input: InputType, frame_count: int = 1) -> int:
 		var count: int = 0
-		frame_count = clampi(frame_count, 1, INPUT_HISTORY_BUFFER_SIZE)
+		frame_count = clampi(frame_count, 1, StickeyInputManager.input_history_buffer_size)
 		for i in (frame_count + 1):
 			if (get_old_input_mask(i + 1) & (1 << input) == 0) && (get_old_input_mask(i) & (1 << input) != 0):
 				count += 1
@@ -191,6 +180,34 @@ enum GamepadType {
 	PLAYSTATION,
 	}
 
+## Threshold for registering trigger as full button press (not deadzone).
+## Value loaded from [ProjectSettings] on [method _init].
+var trigger_press_threshold: float
+## Threshold for registering trigger release.
+## Value loaded from [ProjectSettings] on [method _init].
+var trigger_release_threshold: float
+## Left stick deadzone.
+## Value loaded from [ProjectSettings] on [method _init].
+var left_stick_deadzone: float
+## Right stick deadzone.
+## Value loaded from [ProjectSettings] on [method _init].
+var right_stick_deadzone: float
+## Trigger deadzone (not to be confused with [member trigger_press_threshold].
+## Value loaded from [ProjectSettings] on [method _init].
+var trigger_deadzone: float
+## Mouse sensitivity when translated to stick axis.
+## Value loaded from [ProjectSettings] on [method _init].
+var mouse_sensitivity: float
+## Decay for smoothing mouse movement (higher number results in quicker slow down).
+## Value loaded from [ProjectSettings] on [method _init].
+var mouse_decay: float
+## Clamps fast mouse movement to this value (relative to max joystick movement of 1.0).
+## Value loaded from [ProjectSettings] on [method _init].
+var mouse_clamp: float
+## Number of physics frames to store input history for.
+## Value loaded from [ProjectSettings] on [method _init].
+var input_history_buffer_size: int
+
 ## Connected devices, including keyboard
 var devices: Dictionary[int, StickeyDevice]
 ## Device index to share keyboard input with-- use -1 to not share
@@ -214,6 +231,15 @@ signal device_disconnected(index: int)
 signal primary_device_changed(is_keyboard: bool)
 
 func _init() -> void:
+	trigger_press_threshold = ProjectSettings.get_setting("stickey_input/joystick/trigger/press_threshold", 0.5)
+	trigger_release_threshold = ProjectSettings.get_setting("stickey_input/joystick/trigger/release_threshold", 0.7)
+	left_stick_deadzone = ProjectSettings.get_setting("stickey_input/joystick/left_stick/deadzone", 0.05)
+	right_stick_deadzone = ProjectSettings.get_setting("stickey_input/joystick/right_stick/deadzone", 0.05)
+	trigger_deadzone = ProjectSettings.get_setting("stickey_input/joystick/trigger/deadzone", 0.3)
+	mouse_sensitivity = ProjectSettings.get_setting("stickey_input/keyboard_and_mouse/mouse/sensitivity", 0.3)
+	mouse_decay = ProjectSettings.get_setting("stickey_input/keyboard_and_mouse/mouse/decay_rate", 10.0)
+	mouse_clamp = ProjectSettings.get_setting("stickey_input/keyboard_and_mouse/mouse/max_speed", 5.0)
+	input_history_buffer_size = ProjectSettings.get_setting("stickey_input/general/input_history/buffer_frames", 60)
 	match OS.get_name():
 		"Windows", "macOS", "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD", "Web":
 			connect_keyboard_device()
@@ -233,7 +259,7 @@ func _joy_connection_changed(index: int, connected: bool) -> void:
 		elif device.display_name.contains("Switch"): device.type = GamepadType.SWITCH
 		elif device.display_name.contains("PS"): device.type = GamepadType.PLAYSTATION
 		else: device.type = GamepadType.GENERIC
-		device.input_history.resize(INPUT_HISTORY_BUFFER_SIZE)
+		device.input_history.resize(input_history_buffer_size)
 		devices[index] = device
 		device_connected.emit(index)
 		print("Device connected: %s (%s)"%[device.display_name, index])
@@ -293,8 +319,8 @@ func _input(event: InputEvent) -> void:
 			if !is_keyboard_primary:
 				is_keyboard_primary = true
 				primary_device_changed.emit(true)
-			mouse_raw = event.relative * MOUSE_SENSITIVITY
-			mouse_raw = mouse_raw.clampf(-MOUSE_CLAMP, MOUSE_CLAMP)
+			mouse_raw = event.relative * mouse_sensitivity
+			mouse_raw = mouse_raw.clampf(-mouse_clamp, mouse_clamp)
 			match mouse_stick:
 				Stick.LEFT:
 					_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, mouse_raw.x)
@@ -318,20 +344,20 @@ func _input(event: InputEvent) -> void:
 			match event.axis:
 				JOY_AXIS_TRIGGER_LEFT:
 					if devices[event.device].is_pressed(InputType.L_TRIGGER):
-						if event.axis_value < TRIGGER_RELEASE_THRESHOLD:
+						if event.axis_value < trigger_release_threshold:
 							_update_button(event.device, InputType.L_TRIGGER, false)
-					elif event.axis_value > TRIGGER_PRESS_THRESHOLD:
+					elif event.axis_value > trigger_press_threshold:
 						_update_button(event.device, InputType.L_TRIGGER, true)
 				JOY_AXIS_TRIGGER_RIGHT:
 					if devices[event.device].is_pressed(InputType.R_TRIGGER):
-						if event.axis_value < TRIGGER_RELEASE_THRESHOLD:
+						if event.axis_value < trigger_release_threshold:
 							_update_button(event.device, InputType.R_TRIGGER, false)
-					elif event.axis_value > TRIGGER_PRESS_THRESHOLD:
+					elif event.axis_value > trigger_press_threshold:
 						_update_button(event.device, InputType.R_TRIGGER, true)
 
 func _process(delta: float) -> void:
 	if Input.get_last_mouse_velocity() == Vector2.ZERO && mouse_raw != Vector2.ZERO:
-		mouse_raw = mouse_raw.move_toward(Vector2.ZERO, MOUSE_DECAY * MOUSE_CLAMP * delta)
+		mouse_raw = mouse_raw.move_toward(Vector2.ZERO, mouse_decay * mouse_clamp * delta)
 		match mouse_stick:
 				Stick.LEFT:
 					_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, mouse_raw.x)
@@ -342,7 +368,7 @@ func _process(delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	for device: StickeyDevice in devices.values():
-		device.input_history_index = (device.input_history_index + 1) % INPUT_HISTORY_BUFFER_SIZE
+		device.input_history_index = (device.input_history_index + 1) % input_history_buffer_size
 		device.input_history[device.input_history_index] = device.pressed_mask
 
 ## Adds keyboard device. This is typically done automatically on initialization, 
@@ -352,7 +378,7 @@ func connect_keyboard_device() -> void:
 	devices[KEYBOARD_INDEX].index = KEYBOARD_INDEX
 	devices[KEYBOARD_INDEX].display_name = &"Keyboard"
 	devices[KEYBOARD_INDEX].type = GamepadType.KEYBOARD
-	devices[KEYBOARD_INDEX].input_history.resize(INPUT_HISTORY_BUFFER_SIZE)
+	devices[KEYBOARD_INDEX].input_history.resize(input_history_buffer_size)
 	_initialize_default_keyboard_mappings()
 
 ## Set default keyboard mappings
@@ -418,7 +444,7 @@ func _update_button(device: int, input: InputType, pressed: bool) -> void:
 func _update_axis(device: int, axis: AxisType, value: float) -> void:
 	match axis:
 		AxisType.L_STICK_X, AxisType.L_STICK_Y, AxisType.R_STICK_X, AxisType.R_STICK_Y:
-			if abs(value) < STICK_INPUT_THRESHOLD: value = 0
+			if abs(value) < 1e-4: value = 0
 	match axis:
 		AxisType.L_STICK_X:
 			devices[device].l_stick_raw.x = value
@@ -517,7 +543,11 @@ func serialize_input_mappings() -> ConfigFile:
 			_: bindings[mouse_mappings[button]].append("MouseUnknown")
 	var output := ConfigFile.new()
 	for input in bindings.keys():
-		output.set_value(CONFIG_FILE_SECTION, get_input_type_string(input).to_pascal_case(), bindings[input])
+		output.set_value(
+			ProjectSettings.get_setting("stickey_input/general/serialization/section_key", "InputMappings"),
+			get_input_type_string(input).to_pascal_case(),
+			bindings[input]
+			)
 	return output
 
 ## Deserializes input bindings from a [ConfigFile].
@@ -526,14 +556,18 @@ func deserialize_input_mappings(config: ConfigFile) -> void:
 	keyboard_mappings.clear()
 	mouse_mappings.clear()
 	var bindings: Dictionary[InputType, PackedStringArray]
-	for key in config.get_section_keys(CONFIG_FILE_SECTION):
+	for key in config.get_section_keys(ProjectSettings.get_setting("stickey_input/general/serialization/section_key", "InputMappings")):
 		var key_type: int = -1
 		for input in 32:
 			if get_input_type_string(input).to_pascal_case() == key:
 				key_type = input
 				break
 		if key_type == -1: continue
-		bindings[key_type] = config.get_value(CONFIG_FILE_SECTION, key, []) as PackedStringArray
+		bindings[key_type] = config.get_value(
+			ProjectSettings.get_setting("stickey_input/general/serialization/section_key", "InputMappings"),
+			key,
+			[]
+			) as PackedStringArray
 	for input in bindings.keys():
 		for n in bindings[input].size():
 			if bindings[input][n].begins_with("Mouse"):
