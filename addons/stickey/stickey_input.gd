@@ -222,6 +222,8 @@ var mouse_stick: Stick = Stick.RIGHT
 var keyboard_mappings: Dictionary[Key, InputType]
 ## Mouse button mappings for inputs
 var mouse_mappings: Dictionary[MouseButton, InputType]
+## Remappings for joy buttons
+var joy_remappings: Dictionary[JoyButton, InputType]
 
 ## Emitted when device is connected
 signal device_connected(index: int)
@@ -333,7 +335,10 @@ func _input(event: InputEvent) -> void:
 			if event.device == keyboard_shared_device && is_keyboard_primary:
 				is_keyboard_primary = false
 				primary_device_changed.emit(false)
-			_update_button(event.device, event.button_index, event.pressed)
+			if joy_remappings.has(event.button_index):
+				_update_button(event.device, joy_remappings[event.button_index], event.pressed)
+			else:
+				_update_button(event.device, event.button_index, event.pressed)
 		"InputEventJoypadMotion":
 			if !Input.get_connected_joypads().has(event.device): return
 			if event.device == keyboard_shared_device && is_keyboard_primary:
