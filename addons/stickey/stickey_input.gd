@@ -589,3 +589,15 @@ func deserialize_input_mappings(config: ConfigFile) -> void:
 					_: mouse_mappings[MOUSE_BUTTON_NONE] = input
 			else:
 				keyboard_mappings[OS.find_keycode_from_string(bindings[input][n])] = input
+
+## Helps rebind keyboard mappings
+func rebind_key(key: Key, input: InputType) -> void:
+	keyboard_mappings[key] = input
+
+## Helps rebind mouse mappings
+func rebind_mouse(mouse_button: MouseButton, input: InputType) -> void:
+	mouse_mappings[mouse_button] = input
+
+## Helps rebind joy remappings
+func rebind_joy(joy_button: JoyButton, input: InputType) -> void:
+	joy_remappings[joy_button] = input
