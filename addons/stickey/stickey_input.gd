@@ -112,6 +112,100 @@ class StickeyDevice extends RefCounted:
 			if (get_old_input_mask(i + 1) & (1 << input) == 0) && (get_old_input_mask(i) & (1 << input) != 0):
 				count += 1
 		return count
+	## Returns [Texture2D] for texture path based on input type, or null if path can't be found.
+	## This uses Project Setting "stickey_input/general/icons/base_path" as the base directory,
+	## device type as sub directory (typically "keyboard", "xbox", "switch", "playstation", or "generic",
+	## but this can also be snake_case version of device's SDL name such as "ps_4_controller").
+	## Initially this will use [ResourceLoader], but it will also attempt to load manually as an [ImageTexture].
+	func get_texture(texture_path: String) -> Texture2D:
+		if !texture_path.is_valid_filename(): return null
+		var base_path: String = ProjectSettings.get_setting("stickey_input/general/icons/base_path", "res://")
+		if !DirAccess.dir_exists_absolute(base_path): return null
+		var device_path: String
+		if DirAccess.dir_exists_absolute("%s/%s"%[base_path, display_name.to_snake_case()]):
+			device_path = display_name.to_snake_case()
+		else:
+			match type:
+				GamepadType.KEYBOARD: device_path = "keyboard"
+				GamepadType.XBOX: device_path = "xbox"
+				GamepadType.SWITCH: device_path = "switch"
+				GamepadType.PLAYSTATION: device_path = "playstation"
+				_: device_path = "generic"
+		if !DirAccess.dir_exists_absolute("%s/%s"%[base_path, device_path]): device_path = "generic"
+		if ResourceLoader.exists("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D"):
+			return ResourceLoader.load("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D")
+		elif FileAccess.file_exists("%s/%s/%s"%[base_path, device_path, texture_path]):
+			for extension: String in ["png", "svg", "jpg", "jpeg", "webp"]:
+				if texture_path.get_extension() == extension:
+					var raw_image := Image.load_from_file("%s/%s/%s"%[base_path, device_path, texture_path])
+					return ImageTexture.create_from_image(raw_image)
+		return null
+	## Shorthand of [method get_texture] to load texture "device" (intended as image of device)
+	func get_device_icon() -> Texture2D:
+		var output: Texture2D
+		for extension: String in ["png", "svg", "jpg", "jpeg", "webp"]:
+			output = get_texture("%s.%s"%["device", extension])
+			if output != null: break
+		return output
+	## Uses [method get_texture] to get image of input binding
+	func get_input_icon(input: InputType) -> Texture2D:
+		var output: Texture2D
+		var input_string: String
+		if type == StickeyInputManager.GamepadType.KEYBOARD:
+			if StickeyInputManager.keyboard_mappings.values().has(input):
+				var key: Key = StickeyInputManager.keyboard_mappings.find_key(input)
+				input_string = OS.get_keycode_string(key)
+			elif StickeyInputManager.mouse_mappings.keys().has(input):
+				var button: MouseButton = StickeyInputManager.mouse_mappings.find_key(input)
+				match button:
+					MOUSE_BUTTON_LEFT: input_string = "mouse_left"
+					MOUSE_BUTTON_RIGHT: input_string = "mouse_right"
+					MOUSE_BUTTON_MIDDLE: input_string = "mouse_middle"
+					MOUSE_BUTTON_WHEEL_UP : input_string = "mouse_wheel_up"
+					MOUSE_BUTTON_WHEEL_DOWN: input_string = "mouse_wheel_down"
+					MOUSE_BUTTON_WHEEL_LEFT: input_string = "mouse_wheel_left"
+					MOUSE_BUTTON_WHEEL_RIGHT: input_string = "mouse_wheel_right"
+					MOUSE_BUTTON_XBUTTON1: input_string = "mouse_xbutton_1"
+					MOUSE_BUTTON_XBUTTON2: input_string = "mouse_xbutton_2"
+					_: input_string = "mouse"
+			else: input_string = "unmapped"
+		else:
+			if StickeyInputManager.joy_remappings.has(input): input = StickeyInputManager.joy_remappings[input]
+			input_string = StickeyInputManager.get_input_type_string(input)
+		for extension: String in ["png", "svg", "jpg", "jpeg", "webp"]:
+			output = get_texture("%s.%s"%[
+				input_string.validate_filename().to_snake_case(), 
+				extension]
+				)
+			if output != null: break
+		return output
+	## Returns string representing input binding's name based on device type and mappings.
+	## Returns empty string if input is unmapped.
+	func get_input_string(input: InputType) -> String:
+		var output: Texture2D
+		var input_string: String
+		if type == StickeyInputManager.GamepadType.KEYBOARD:
+			if StickeyInputManager.keyboard_mappings.values().has(input):
+				var key: Key = StickeyInputManager.keyboard_mappings.find_key(input)
+				return OS.get_keycode_string(key)
+			elif StickeyInputManager.mouse_mappings.keys().has(input):
+				var button: MouseButton = StickeyInputManager.mouse_mappings.find_key(input)
+				match button:
+					MOUSE_BUTTON_LEFT: input_string = "Mouse Left"
+					MOUSE_BUTTON_RIGHT: input_string = "Mouse Right"
+					MOUSE_BUTTON_MIDDLE: input_string = "Mouse Middle"
+					MOUSE_BUTTON_WHEEL_UP : input_string = "Mouse Wheel Up"
+					MOUSE_BUTTON_WHEEL_DOWN: input_string = "Mouse Wheel Down"
+					MOUSE_BUTTON_WHEEL_LEFT: input_string = "Mouse Wheel Left"
+					MOUSE_BUTTON_WHEEL_RIGHT: input_string = "Mouse Wheel Right"
+					MOUSE_BUTTON_XBUTTON1: input_string = "Mouse Extra 1"
+					MOUSE_BUTTON_XBUTTON2: input_string = "Mouse Extra 2"
+					_: input_string = "Mouse Button"
+			else: return ""
+		else:
+			if StickeyInputManager.joy_remappings.has(input): input = StickeyInputManager.joy_remappings[input]
+			return StickeyInputManager.get_input_type_string(input)
+		return ""
 
 ## Button inputs
 enum InputType {
