@@ -483,7 +483,7 @@ func connect_keyboard_device() -> void:
 	devices[KEYBOARD_INDEX].input_history.resize(input_history_buffer_size)
 	_initialize_default_keyboard_mappings()
 
-## Set default keyboard mappings
+## Set default keyboard mappings. FOR DEV PURPOSES, will be replaced by CFG loading!!!
 func _initialize_default_keyboard_mappings() -> void:
 	keyboard_mappings[KEY_SPACE] = InputType.SOUTH
 	keyboard_mappings[KEY_E] = InputType.EAST
@@ -531,6 +531,9 @@ func _initialize_default_keyboard_mappings() -> void:
 	keyboard_mappings[KEY_A] = InputType.L_STICK_LEFT
 	keyboard_mappings[KEY_S] = InputType.L_STICK_DOWN
 	keyboard_mappings[KEY_D] = InputType.L_STICK_RIGHT
+	
+	var cfg := serialize_input_mappings()
+	cfg.save("res://addons/stickey/default_mappings.cfg")
 
 ## Updates device [member StickeyDevice.pressed_mask]
 func _update_button(device: int, input: InputType, pressed: bool) -> void:
@@ -750,8 +753,8 @@ func get_axis_type_string(axis: AxisType) -> String:
 ## Creates a [ConfigFile] for serializing input bindings.
 ## This can later be loaded with [method deserialize_input_mappings].
 func serialize_input_mappings() -> ConfigFile:
-	var bindings: Dictionary[InputType, PackedStringArray]
-	for key in keyboard_mappings:
+	var bindings: Dictionary[InputType, Array]
+	for key in keyboard_mappings.keys():
 		if !bindings.has(keyboard_mappings[key]): bindings[keyboard_mappings[key]] = []
 		bindings[keyboard_mappings[key]].append(OS.get_keycode_string(key))
 	for button in mouse_mappings:
@@ -767,6 +770,9 @@ func serialize_input_mappings() -> ConfigFile:
 			MOUSE_BUTTON_XBUTTON1: bindings[mouse_mappings[button]].append("MouseExtra1")
 			MOUSE_BUTTON_XBUTTON2: bindings[mouse_mappings[button]].append("MouseExtra2")
 			_: bindings[mouse_mappings[button]].append("MouseUnknown")
+	for button in joy_remappings:
+		if !bindings.has(joy_remappings[button]): bindings[joy_remappings[button]] = []
+		bindings[joy_remappings[button]].append("JoyButton%s"%button)
 	var output := ConfigFile.new()
 	for input in bindings.keys():
 		output.set_value(
@@ -808,6 +814,9 @@ func deserialize_input_mappings(config: ConfigFile) -> void:
 					"MouseExtra1": mouse_mappings[MOUSE_BUTTON_XBUTTON1] = input
 					"MouseExtra2": mouse_mappings[MOUSE_BUTTON_XBUTTON2] = input
 					_: mouse_mappings[MOUSE_BUTTON_NONE] = input
+			elif bindings[input][n].begins_with("JoyButton"):
+				var value := bindings[input][n].trim_prefix("JoyButton")
+				if value.is_valid_int(): joy_remappings[value.to_int()] = input
 			else:
 				keyboard_mappings[OS.find_keycode_from_string(bindings[input][n])] = input
 
