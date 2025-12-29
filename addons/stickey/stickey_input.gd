@@ -488,49 +488,52 @@ func _initialize_default_keyboard_mappings() -> void:
 	keyboard_mappings[KEY_SPACE] = InputType.SOUTH
 	keyboard_mappings[KEY_E] = InputType.EAST
 	keyboard_mappings[KEY_Q] = InputType.WEST
-	keyboard_mappings[KEY_F] = InputType.NORTH
+	keyboard_mappings[KEY_R] = InputType.NORTH
 	
 	keyboard_mappings[KEY_TAB] = InputType.BACK
 	keyboard_mappings[KEY_ESCAPE] = InputType.START
 	
-	keyboard_mappings[KEY_UP] = InputType.UP_DIRECTION
-	keyboard_mappings[KEY_1] = InputType.UP_DIRECTION
-	keyboard_mappings[KEY_DOWN] = InputType.DOWN_DIRECTION
-	keyboard_mappings[KEY_3] = InputType.DOWN_DIRECTION
-	keyboard_mappings[KEY_LEFT] = InputType.LEFT_DIRECTION
-	keyboard_mappings[KEY_4] = InputType.LEFT_DIRECTION
-	keyboard_mappings[KEY_RIGHT] = InputType.RIGHT_DIRECTION
-	keyboard_mappings[KEY_2] = InputType.RIGHT_DIRECTION
+	keyboard_mappings[KEY_C] = InputType.L_SHOULDER
+	keyboard_mappings[KEY_V] = InputType.R_SHOULDER
 	
-	keyboard_mappings[KEY_ALT] = InputType.L_SHOULDER
-	keyboard_mappings[KEY_CTRL] = InputType.R_SHOULDER
+	keyboard_mappings[KEY_SHIFT] = InputType.L_STICK
+	keyboard_mappings[KEY_ALT] = InputType.R_STICK
+	mouse_mappings[MOUSE_BUTTON_MIDDLE] = InputType.R_STICK
 	
-	keyboard_mappings[KEY_C] = InputType.L_STICK
-	keyboard_mappings[KEY_V] = InputType.R_STICK
+	keyboard_mappings[KEY_F] = InputType.PADDLE_1
+	keyboard_mappings[KEY_T] = InputType.PADDLE_2
+	keyboard_mappings[KEY_G] = InputType.PADDLE_3
+	keyboard_mappings[KEY_X] = InputType.PADDLE_4
+	keyboard_mappings[KEY_Z] = InputType.TOUCH_PAD
 	
-	keyboard_mappings[KEY_P] = InputType.MISC_1
-	keyboard_mappings[KEY_Z] = InputType.PADDLE_1
-	keyboard_mappings[KEY_X] = InputType.PADDLE_2
-	keyboard_mappings[KEY_B] = InputType.PADDLE_3
-	keyboard_mappings[KEY_N] = InputType.PADDLE_4
-	keyboard_mappings[KEY_T] = InputType.TOUCH_PAD
+	keyboard_mappings[KEY_1] = InputType.MISC_2
+	keyboard_mappings[KEY_2] = InputType.MISC_3
+	keyboard_mappings[KEY_3] = InputType.MISC_4
+	keyboard_mappings[KEY_4] = InputType.MISC_5
+	keyboard_mappings[KEY_5] = InputType.MISC_6
+	keyboard_mappings[KEY_6] = InputType.MISC_7
+	keyboard_mappings[KEY_7] = InputType.MISC_8
+	keyboard_mappings[KEY_8] = InputType.MISC_9
+	keyboard_mappings[KEY_9] = InputType.MISC_10
 	
-	keyboard_mappings[KEY_5] = InputType.MISC_2
-	keyboard_mappings[KEY_6] = InputType.MISC_3
-	keyboard_mappings[KEY_7] = InputType.MISC_4
-	keyboard_mappings[KEY_8] = InputType.MISC_5
-	keyboard_mappings[KEY_9] = InputType.MISC_6
-	
-	mouse_mappings[MOUSE_BUTTON_LEFT] = InputType.L_TRIGGER
-	mouse_mappings[MOUSE_BUTTON_RIGHT] = InputType.R_TRIGGER
+	mouse_mappings[MOUSE_BUTTON_LEFT] = InputType.R_TRIGGER
+	mouse_mappings[MOUSE_BUTTON_RIGHT] = InputType.L_TRIGGER
 	
 	mouse_mappings[MOUSE_BUTTON_WHEEL_UP] = InputType.UP_DIRECTION
 	mouse_mappings[MOUSE_BUTTON_WHEEL_DOWN] = InputType.DOWN_DIRECTION
+	keyboard_mappings[KEY_UP] = InputType.UP_DIRECTION
+	keyboard_mappings[KEY_LEFT] = InputType.LEFT_DIRECTION
+	keyboard_mappings[KEY_DOWN] = InputType.DOWN_DIRECTION
+	keyboard_mappings[KEY_RIGHT] = InputType.RIGHT_DIRECTION
+	mouse_mappings[MOUSE_BUTTON_WHEEL_LEFT] = InputType.LEFT_DIRECTION
+	mouse_mappings[MOUSE_BUTTON_WHEEL_RIGHT] = InputType.RIGHT_DIRECTION
 	
 	keyboard_mappings[KEY_W] = InputType.L_STICK_UP
 	keyboard_mappings[KEY_A] = InputType.L_STICK_LEFT
 	keyboard_mappings[KEY_S] = InputType.L_STICK_DOWN
 	keyboard_mappings[KEY_D] = InputType.L_STICK_RIGHT
+	
+	
 	
 	var cfg := serialize_input_mappings()
 	cfg.save("res://addons/stickey/default_mappings.cfg")
