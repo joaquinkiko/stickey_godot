@@ -24,8 +24,8 @@ const SETTING_NAME_CONFIG_FILE_SECTION := "stickey_input/general/serialization/s
 const SETTING_VALUE_CONFIG_FILE_SECTION := "InputMappings"
 const SETTING_NAME_CONFIG_FILE_PATH := "stickey_input/general/serialization/default_mappings_path"
 const SETTING_VALUE_CONFIG_FILE_PATH := "res://addons/stickey/default_mappings.cfg"
-const SETTING_NAME_ICONS_BASE_PATH := "stickey_input/general/icons/base_path"
-const SETTING_VALUE_ICONS_BASE_PATH := "res://input_icons"
+const SETTING_NAME_GLYPHS_BASE_PATH := "stickey_input/general/glyph/base_path"
+const SETTING_VALUE_GLYPHS_BASE_PATH := "res://addons/stickey/glyphs"
 
 func _enable_plugin() -> void:
 	add_autoload_singleton("StickeyInputManager", "stickey_input.gd")
@@ -135,11 +135,11 @@ func _enter_tree() -> void:
 		"hint": PROPERTY_HINT_FILE_PATH,
 		"hint_string": "*.cfg,*.ini"
 	})
-	if !ProjectSettings.has_setting(SETTING_NAME_ICONS_BASE_PATH):
-		ProjectSettings.set_setting(SETTING_NAME_ICONS_BASE_PATH, SETTING_VALUE_ICONS_BASE_PATH)
-	ProjectSettings.set_initial_value(SETTING_NAME_ICONS_BASE_PATH, SETTING_VALUE_ICONS_BASE_PATH)
+	if !ProjectSettings.has_setting(SETTING_NAME_GLYPHS_BASE_PATH):
+		ProjectSettings.set_setting(SETTING_NAME_GLYPHS_BASE_PATH, SETTING_VALUE_GLYPHS_BASE_PATH)
+	ProjectSettings.set_initial_value(SETTING_NAME_GLYPHS_BASE_PATH, SETTING_VALUE_GLYPHS_BASE_PATH)
 	ProjectSettings.add_property_info({
-		"name": SETTING_NAME_ICONS_BASE_PATH,
+		"name": SETTING_NAME_GLYPHS_BASE_PATH,
 		"type": TYPE_STRING,
 		"hint": PROPERTY_HINT_DIR
 	})

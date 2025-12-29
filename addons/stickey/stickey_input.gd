@@ -114,13 +114,13 @@ class StickeyDevice extends RefCounted:
 				count += 1
 		return count
 	## Returns [Texture2D] for texture path based on input type, or null if path can't be found.
-	## This uses Project Setting "stickey_input/general/icons/base_path" as the base directory,
+	## This uses Project Setting "stickey_input/general/glyph/base_path" as the base directory,
 	## device type as sub directory (typically "keyboard", "xbox", "switch", "playstation", or "generic",
 	## but this can also be snake_case version of device's SDL name such as "ps_4_controller").
 	## Initially this will use [ResourceLoader], but it will also attempt to load manually as an [ImageTexture].
-	func get_texture(texture_path: String) -> Texture2D:
+	func get_glyph(texture_path: String) -> Texture2D:
 		if !texture_path.is_valid_filename(): return null
-		var base_path: String = ProjectSettings.get_setting("stickey_input/general/icons/base_path", "res://")
+		var base_path: String = ProjectSettings.get_setting("stickey_input/general/glyph/base_path", "res://")
 		if !DirAccess.dir_exists_absolute(base_path): return null
 		var device_path: String
 		if DirAccess.dir_exists_absolute("%s/%s"%[base_path, display_name.to_snake_case()]):
@@ -143,14 +143,14 @@ class StickeyDevice extends RefCounted:
 					return ImageTexture.create_from_image(raw_image)
 		return null
 	## Shorthand of [method get_texture] to load texture "device" (intended as image of device)
-	func get_device_icon() -> Texture2D:
+	func get_device_glyph() -> Texture2D:
 		var output: Texture2D
 		for extension: String in ["png", "svg", "jpg", "jpeg", "webp"]:
-			output = get_texture("%s.%s"%["device", extension])
+			output = get_glyph("%s.%s"%["device", extension])
 			if output != null: break
 		return output
 	## Uses [method get_texture] to get image of input binding
-	func get_input_icon(input: InputType) -> Texture2D:
+	func get_input_glyph(input: InputType) -> Texture2D:
 		var output: Texture2D
 		var input_string: String
 		if type == StickeyInputManager.GamepadType.KEYBOARD:
@@ -175,7 +175,7 @@ class StickeyDevice extends RefCounted:
 			if StickeyInputManager.joy_remappings.has(input): input = StickeyInputManager.joy_remappings[input]
 			input_string = StickeyInputManager.get_input_type_string(input)
 		for extension: String in ["png", "svg", "jpg", "jpeg", "webp"]:
-			output = get_texture("%s.%s"%[
+			output = get_glyph("%s.%s"%[
 				input_string.validate_filename().to_snake_case(), 
 				extension]
 				)
