@@ -2,6 +2,7 @@ extends Node
 
 const KEYBOARD_INDEX: int = -1
 const MAX_INPUT_TYPES: int = 64
+const MAX_INPUT_MASK_BITS: int = 32
 
 ## Represents a connected device
 class StickeyDevice extends RefCounted:
@@ -496,7 +497,7 @@ func _initialize_default_keyboard_mappings() -> void:
 
 ## Updates device [member StickeyDevice.pressed_mask]
 func _update_button(device: int, input: InputType, pressed: bool) -> void:
-	if input > 31: return
+	if input >= MAX_INPUT_MASK_BITS: return
 	var bit := 1 << int(input)
 	if pressed: devices[device].pressed_mask |= bit
 	else: devices[device].pressed_mask &= ~bit
