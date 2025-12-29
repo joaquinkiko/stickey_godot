@@ -13,11 +13,11 @@ const SETTING_VALUE_RIGHT_STICK_DEADZONE := 0.05
 const SETTING_NAME_TRIGGER_DEADZONE := "stickey_input/joystick/trigger/deadzone"
 const SETTING_VALUE_TRIGGER_DEADZONE := 0.30
 const SETTING_NAME_MOUSE_SENSITIVITY := "stickey_input/keyboard_and_mouse/mouse/sensitivity"
-const SETTING_VALUE_MOUSE_SENSITIVITY := 0.30
+const SETTING_VALUE_MOUSE_SENSITIVITY := 0.10
 const SETTING_NAME_MOUSE_DECAY := "stickey_input/keyboard_and_mouse/mouse/decay_rate"
-const SETTING_VALUE_MOUSE_DECAY := 10.0
+const SETTING_VALUE_MOUSE_DECAY := 20.0
 const SETTING_NAME_MOUSE_CLAMP :=  "stickey_input/keyboard_and_mouse/mouse/max_speed"
-const SETTING_VALUE_MOUSE_CLAMP := 5.0
+const SETTING_VALUE_MOUSE_CLAMP := 7.0
 const SETTING_NAME_INPUT_HISTORY_BUFFER_SIZE := "stickey_input/general/input_history/buffer_frames"
 const SETTING_VALUE_INPUT_HISTORY_BUFFER_SIZE := 60
 const SETTING_NAME_CONFIG_FILE_SECTION := "stickey_input/general/serialization/section_key"
@@ -90,7 +90,7 @@ func _enter_tree() -> void:
 		"name": SETTING_NAME_MOUSE_SENSITIVITY,
 		"type": TYPE_FLOAT,
 		"hint": PROPERTY_HINT_RANGE,
-		"hint_string": "0.01,2.0,or_greater"
+		"hint_string": "0.01,1.0,or_greater"
 	})
 	if !ProjectSettings.has_setting(SETTING_NAME_MOUSE_DECAY):
 		ProjectSettings.set_setting(SETTING_NAME_MOUSE_DECAY, SETTING_VALUE_MOUSE_DECAY)
@@ -99,7 +99,7 @@ func _enter_tree() -> void:
 		"name": SETTING_NAME_MOUSE_DECAY,
 		"type": TYPE_FLOAT,
 		"hint": PROPERTY_HINT_RANGE,
-		"hint_string": "1.0,20.0,or_greater"
+		"hint_string": "10.0,40.0,or_greater"
 	})
 	if !ProjectSettings.has_setting(SETTING_NAME_MOUSE_CLAMP):
 		ProjectSettings.set_setting(SETTING_NAME_MOUSE_CLAMP, SETTING_VALUE_MOUSE_CLAMP)
