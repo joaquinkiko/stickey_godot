@@ -11,7 +11,7 @@ class StickeyDevice extends RefCounted:
 	## Device display name
 	var display_name: StringName
 	## Gamepad type
-	var type: GamepadType
+	var type: DeviceType
 	
 	## Pressed input mask
 	var pressed_mask: int = 0
@@ -128,11 +128,11 @@ class StickeyDevice extends RefCounted:
 			device_path = display_name.to_snake_case()
 		else:
 			match type:
-				GamepadType.KEYBOARD: device_path = "keyboard"
-				GamepadType.XBOX: device_path = "xbox"
-				GamepadType.SWITCH: device_path = "switch"
-				GamepadType.PLAYSTATION: device_path = "playstation"
-				GamepadType.STEAMDECK: device_path = "steam_deck"
+				DeviceType.KEYBOARD: device_path = "keyboard"
+				DeviceType.XBOX: device_path = "xbox"
+				DeviceType.SWITCH: device_path = "switch"
+				DeviceType.PLAYSTATION: device_path = "playstation"
+				DeviceType.STEAMDECK: device_path = "steam_deck"
 				_: device_path = "generic"
 		if !DirAccess.dir_exists_absolute("%s/%s"%[base_path, device_path]): device_path = "generic"
 		if ResourceLoader.exists("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D"):
@@ -154,7 +154,7 @@ class StickeyDevice extends RefCounted:
 	func get_input_glyph(input: InputType) -> Texture2D:
 		var output: Texture2D
 		var input_string: String
-		if type == StickeyInputManager.GamepadType.KEYBOARD:
+		if type == StickeyInputManager.DeviceType.KEYBOARD:
 			if StickeyInputManager.keyboard_mappings.values().has(input):
 				var key: Key = StickeyInputManager.keyboard_mappings.find_key(input)
 				input_string = OS.get_keycode_string(key)
@@ -187,7 +187,7 @@ class StickeyDevice extends RefCounted:
 	func get_input_string(input: InputType) -> String:
 		var output: Texture2D
 		var input_string: String
-		if type == StickeyInputManager.GamepadType.KEYBOARD:
+		if type == StickeyInputManager.DeviceType.KEYBOARD:
 			if StickeyInputManager.keyboard_mappings.values().has(input):
 				var key: Key = StickeyInputManager.keyboard_mappings.find_key(input)
 				return OS.get_keycode_string(key)
@@ -281,7 +281,7 @@ enum Stick {
 	RIGHT = 1,
 	}
 ## Helper to determine type of device for UI
-enum GamepadType {
+enum DeviceType {
 	KEYBOARD,
 	GENERIC,
 	XBOX,
@@ -369,11 +369,11 @@ func _joy_connection_changed(index: int, connected: bool) -> void:
 		var device := StickeyDevice.new()
 		device.index = index
 		device.display_name = Input.get_joy_name(index)
-		if device.display_name.contains("Xbox"): device.type = GamepadType.XBOX
-		elif device.display_name.contains("Switch"): device.type = GamepadType.SWITCH
-		elif device.display_name.contains("PS"): device.type = GamepadType.PLAYSTATION
-		elif device.display_name.contains("Steam Deck"): device.type = GamepadType.STEAMDECK
-		else: device.type = GamepadType.GENERIC
+		if device.display_name.contains("Xbox"): device.type = DeviceType.XBOX
+		elif device.display_name.contains("Switch"): device.type = DeviceType.SWITCH
+		elif device.display_name.contains("PS"): device.type = DeviceType.PLAYSTATION
+		elif device.display_name.contains("Steam Deck"): device.type = DeviceType.STEAMDECK
+		else: device.type = DeviceType.GENERIC
 		device.input_history.resize(input_history_buffer_size)
 		devices[index] = device
 		device_connected.emit(index)
@@ -518,7 +518,7 @@ func connect_keyboard_device() -> void:
 	devices[KEYBOARD_INDEX] = StickeyDevice.new()
 	devices[KEYBOARD_INDEX].index = KEYBOARD_INDEX
 	devices[KEYBOARD_INDEX].display_name = &"Keyboard"
-	devices[KEYBOARD_INDEX].type = GamepadType.KEYBOARD
+	devices[KEYBOARD_INDEX].type = DeviceType.KEYBOARD
 	devices[KEYBOARD_INDEX].input_history.resize(input_history_buffer_size)
 	_initialize_default_keyboard_mappings()
 
@@ -575,11 +575,11 @@ func _update_key_axis(pressed: bool, axis: AxisType, dir_bit: int, inv_dir_bit: 
 func stop_all_rumble() -> void:
 	for joypad in Input.get_connected_joypads(): Input.stop_joy_vibration(joypad)
 
-## Returns string for [enum InputType] and [enum GamepadType].
+## Returns string for [enum InputType] and [enum DeviceType].
 ## Returns "Unknown" if can't find string for input and device combo.
-func get_input_type_string(input: InputType, device_type: GamepadType = GamepadType.GENERIC) -> String:
+func get_input_type_string(input: InputType, device_type: DeviceType = DeviceType.GENERIC) -> String:
 	match device_type:
-		GamepadType.XBOX:
+		DeviceType.XBOX:
 			match input:
 				InputType.SOUTH: return "A"
 				InputType.EAST: return "B"
@@ -611,7 +611,7 @@ func get_input_type_string(input: InputType, device_type: GamepadType = GamepadT
 				InputType.R_STICK_DOWN: return "Right Stick Down"
 				InputType.R_STICK_LEFT: return "Right Stick Left"
 				InputType.R_STICK_RIGHT: return "Right Stick Right"
-		GamepadType.PLAYSTATION:
+		DeviceType.PLAYSTATION:
 			match input:
 				InputType.SOUTH: return "Cross"
 				InputType.EAST: return "Circle"
@@ -640,7 +640,7 @@ func get_input_type_string(input: InputType, device_type: GamepadType = GamepadT
 				InputType.R_STICK_DOWN: return "R Stick Down"
 				InputType.R_STICK_LEFT: return "R Stick Left"
 				InputType.R_STICK_RIGHT: return "R Stick Right"
-		GamepadType.SWITCH:
+		DeviceType.SWITCH:
 			match input:
 				InputType.SOUTH: return "B"
 				InputType.EAST: return "A"
@@ -667,8 +667,8 @@ func get_input_type_string(input: InputType, device_type: GamepadType = GamepadT
 				InputType.R_STICK_DOWN: return "R Stick Down"
 				InputType.R_STICK_LEFT: return "R Stick Left"
 				InputType.R_STICK_RIGHT: return "R Stick Right"
-		GamepadType.KEYBOARD: pass
-		GamepadType.STEAMDECK:
+		DeviceType.KEYBOARD: pass
+		DeviceType.STEAMDECK:
 			match input:
 				InputType.SOUTH: return "A"
 				InputType.EAST: return "B"
