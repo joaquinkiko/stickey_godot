@@ -17,3 +17,4 @@ This plugin is designed for **[Godot 4.5+](https://godotengine.org/download)**
 - Default mappings file
 - Mouse captured/free/hidden automatic states
 - Default glyphs via [Kenney Input Prompts](https://www.kenney.nl/assets/input-prompts)
+- Check "project_manager/directory_naming_convention" editor setting for default directory to search
