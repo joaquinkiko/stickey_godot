@@ -210,6 +210,18 @@ class StickeyDevice extends RefCounted:
 			return StickeyInputManager.get_input_type_string(input, type)
 		return ""
 
+## Internal bitmask values for use with [member _key_to_axis_mask]
+enum _StickBit {
+	L_UP = 1,
+	L_DOWN = 2,
+	L_LEFT = 4,
+	L_RIGHT = 8,
+	R_UP = 16,
+	R_DOWN = 32,
+	R_LEFT = 64,
+	R_RIGHT = 128
+	}
+
 ## Button inputs
 enum InputType {
 	SOUTH = 0, 				# Bottom face button / Xbox: A Button
@@ -322,6 +334,8 @@ var keyboard_mappings: Dictionary[Key, InputType]
 var mouse_mappings: Dictionary[MouseButton, InputType]
 ## Remappings for joy buttons
 var joy_remappings: Dictionary[JoyButton, InputType]
+## Bitmask used internally for mapping keyboard to stick axis
+var _key_to_axis_mask: int
 
 ## Emitted when device is connected
 signal device_connected(index: int)
@@ -388,15 +402,22 @@ func _input(event: InputEvent) -> void:
 				match keyboard_mappings[event.keycode]:
 					InputType.L_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.L_TRIGGER, float(event.pressed))
 					InputType.R_TRIGGER: _update_axis(KEYBOARD_INDEX, AxisType.R_TRIGGER, float(event.pressed))
-					InputType.L_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, -float(event.pressed))
-					InputType.L_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, float(event.pressed))
-					InputType.L_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, -float(event.pressed))
-					InputType.L_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, float(event.pressed))
-					InputType.R_STICK_UP: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, -float(event.pressed))
-					InputType.R_STICK_DOWN: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, float(event.pressed))
-					InputType.R_STICK_LEFT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, -float(event.pressed))
-					InputType.R_STICK_RIGHT: _update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, float(event.pressed))
-				return
+					InputType.L_STICK_UP:
+						_update_key_axis(event.pressed, AxisType.L_STICK_Y, _StickBit.L_UP, _StickBit.L_DOWN, -1)
+					InputType.L_STICK_DOWN:
+						_update_key_axis(event.pressed, AxisType.L_STICK_Y, _StickBit.L_DOWN, _StickBit.L_UP, 1)
+					InputType.L_STICK_LEFT:
+						_update_key_axis(event.pressed, AxisType.L_STICK_X, _StickBit.L_LEFT, _StickBit.L_RIGHT, -1)
+					InputType.L_STICK_RIGHT:
+						_update_key_axis(event.pressed, AxisType.L_STICK_X, _StickBit.L_RIGHT, _StickBit.L_LEFT, 1)
+					InputType.R_STICK_UP:
+						_update_key_axis(event.pressed, AxisType.R_STICK_Y, _StickBit.R_UP, _StickBit.R_DOWN, -1)
+					InputType.R_STICK_DOWN:
+						_update_key_axis(event.pressed, AxisType.R_STICK_Y, _StickBit.R_DOWN, _StickBit.R_UP, 1)
+					InputType.R_STICK_LEFT:
+						_update_key_axis(event.pressed, AxisType.R_STICK_X, _StickBit.R_LEFT, _StickBit.R_RIGHT, -1)
+					InputType.R_STICK_RIGHT:
+						_update_key_axis(event.pressed, AxisType.R_STICK_X, _StickBit.R_RIGHT, _StickBit.R_LEFT, 1)
 		"InputEventMouseButton":
 			if !devices.has(KEYBOARD_INDEX): return
 			if !is_keyboard_primary:
@@ -458,6 +479,21 @@ func _input(event: InputEvent) -> void:
 							_update_button(event.device, InputType.R_TRIGGER, false)
 					elif event.axis_value > trigger_press_threshold:
 						_update_button(event.device, InputType.R_TRIGGER, true)
+
+func _notification(what: int) -> void:
+	# On focus lost, reset inputs
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		for index in devices.keys():
+			_update_axis(index, AxisType.L_STICK_X, 0)
+			_update_axis(index, AxisType.L_STICK_Y, 0)
+			_update_axis(index, AxisType.R_STICK_X, 0)
+			_update_axis(index, AxisType.R_STICK_Y, 0)
+			for input in MAX_INPUT_MASK_BITS:
+				if devices[index].is_pressed(input):
+					_update_button(index, input, false)
+		if devices.has(KEYBOARD_INDEX):
+			_key_to_axis_mask = 0
+			mouse_raw = Vector2.ZERO
 
 func _process(delta: float) -> void:
 	if mouse_raw != Vector2.ZERO && Input.get_last_mouse_screen_velocity() != Vector2.ZERO:
@@ -525,6 +561,15 @@ func _update_axis(device: int, axis: AxisType, value: float) -> void:
 			devices[device].r_trigger_raw = value
 	if device == KEYBOARD_INDEX && keyboard_shared_device >= 0 && devices.has(keyboard_shared_device):
 		_update_axis(keyboard_shared_device, axis, value)
+
+## Quick function for handling [member _key_to_axis_mask] value and updating axis 
+func _update_key_axis(pressed: bool, axis: AxisType, dir_bit: int, inv_dir_bit: int, multiplier: float) -> void:
+	if pressed:
+		_key_to_axis_mask |= dir_bit
+		_update_axis(KEYBOARD_INDEX, axis, int(!_key_to_axis_mask & inv_dir_bit) * multiplier)
+	else:
+		_key_to_axis_mask &= ~dir_bit
+		_update_axis(KEYBOARD_INDEX, axis, int(_key_to_axis_mask & inv_dir_bit) * -multiplier)
 
 ## Stop vibrations on all devices
 func stop_all_rumble() -> void:
