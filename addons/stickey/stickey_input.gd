@@ -130,6 +130,7 @@ class StickeyDevice extends RefCounted:
 				GamepadType.XBOX: device_path = "xbox"
 				GamepadType.SWITCH: device_path = "switch"
 				GamepadType.PLAYSTATION: device_path = "playstation"
+				GamepadType.STEAMDECK: device_path = "steam_deck"
 				_: device_path = "generic"
 		if !DirAccess.dir_exists_absolute("%s/%s"%[base_path, device_path]): device_path = "generic"
 		if ResourceLoader.exists("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D"):
@@ -272,6 +273,7 @@ enum GamepadType {
 	XBOX,
 	SWITCH,
 	PLAYSTATION,
+	STEAMDECK
 	}
 
 ## Threshold for registering trigger as full button press (not deadzone).
@@ -354,6 +356,7 @@ func _joy_connection_changed(index: int, connected: bool) -> void:
 		if device.display_name.contains("Xbox"): device.type = GamepadType.XBOX
 		elif device.display_name.contains("Switch"): device.type = GamepadType.SWITCH
 		elif device.display_name.contains("PS"): device.type = GamepadType.PLAYSTATION
+		elif device.display_name.contains("Steam Deck"): device.type = GamepadType.STEAMDECK
 		else: device.type = GamepadType.GENERIC
 		device.input_history.resize(input_history_buffer_size)
 		devices[index] = device
@@ -657,6 +660,38 @@ func get_input_type_string(input: InputType, device_type: GamepadType = GamepadT
 				InputType.R_STICK_LEFT: return "R Stick Left"
 				InputType.R_STICK_RIGHT: return "R Stick Right"
 		GamepadType.KEYBOARD: pass
+		GamepadType.STEAMDECK:
+			match input:
+				InputType.SOUTH: return "A"
+				InputType.EAST: return "B"
+				InputType.WEST: return "X"
+				InputType.NORTH: return "Y"
+				InputType.BACK: return "View"
+				InputType.GUIDE: return "Steam"
+				InputType.START: return "Menu"
+				InputType.L_STICK: return "L3"
+				InputType.R_STICK: return "R4"
+				InputType.L_SHOULDER: return "L1"
+				InputType.R_SHOULDER: return "R1"
+				InputType.UP_DIRECTION: return "D-Pad Up"
+				InputType.DOWN_DIRECTION: return "D-Pad Down"
+				InputType.LEFT_DIRECTION: return "D-Pad Left"
+				InputType.RIGHT_DIRECTION: return "D-Pad Right"
+				InputType.MISC_1: return "Quick Access"
+				InputType.PADDLE_1: return "L4"
+				InputType.PADDLE_2: return "R4"
+				InputType.PADDLE_3: return "L5"
+				InputType.PADDLE_4: return "R5"
+				InputType.L_TRIGGER: return "L2"
+				InputType.R_TRIGGER: return "R2"
+				InputType.L_STICK_UP: return "Left Stick Up"
+				InputType.L_STICK_DOWN: return "Left Stick Down"
+				InputType.L_STICK_LEFT: return "Left Stick Left"
+				InputType.L_STICK_RIGHT: return "Left Stick Right"
+				InputType.R_STICK_UP: return "Right Stick Up"
+				InputType.R_STICK_DOWN: return "Right Stick Down"
+				InputType.R_STICK_LEFT: return "Right Stick Left"
+				InputType.R_STICK_RIGHT: return "Right Stick Right"
 		_:
 			match input:
 				InputType.SOUTH: return "South"
