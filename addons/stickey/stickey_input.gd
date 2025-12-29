@@ -335,9 +335,9 @@ func _init() -> void:
 	left_stick_deadzone = ProjectSettings.get_setting("stickey_input/joystick/left_stick/deadzone", 0.05)
 	right_stick_deadzone = ProjectSettings.get_setting("stickey_input/joystick/right_stick/deadzone", 0.05)
 	trigger_deadzone = ProjectSettings.get_setting("stickey_input/joystick/trigger/deadzone", 0.3)
-	mouse_sensitivity = ProjectSettings.get_setting("stickey_input/keyboard_and_mouse/mouse/sensitivity", 0.3)
-	mouse_decay = ProjectSettings.get_setting("stickey_input/keyboard_and_mouse/mouse/decay_rate", 10.0)
-	mouse_clamp = ProjectSettings.get_setting("stickey_input/keyboard_and_mouse/mouse/max_speed", 5.0)
+	mouse_sensitivity = ProjectSettings.get_setting("stickey_input/keyboard_and_mouse/mouse/sensitivity", 0.1)
+	mouse_decay = ProjectSettings.get_setting("stickey_input/keyboard_and_mouse/mouse/decay_rate", 20.0)
+	mouse_clamp = ProjectSettings.get_setting("stickey_input/keyboard_and_mouse/mouse/max_speed", 7.0)
 	input_history_buffer_size = ProjectSettings.get_setting("stickey_input/general/input_history/buffer_frames", 60)
 	match OS.get_name():
 		"Windows", "macOS", "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD", "Web":
@@ -419,7 +419,7 @@ func _input(event: InputEvent) -> void:
 			if !is_keyboard_primary:
 				is_keyboard_primary = true
 				primary_device_changed.emit(true)
-			mouse_raw = event.relative * mouse_sensitivity
+			mouse_raw = event.screen_relative * mouse_sensitivity
 			mouse_raw = mouse_raw.clampf(-mouse_clamp, mouse_clamp)
 			match mouse_stick:
 				Stick.LEFT:
@@ -459,15 +459,16 @@ func _input(event: InputEvent) -> void:
 						_update_button(event.device, InputType.R_TRIGGER, true)
 
 func _process(delta: float) -> void:
-	if Input.get_last_mouse_velocity() == Vector2.ZERO && mouse_raw != Vector2.ZERO:
-		mouse_raw = mouse_raw.move_toward(Vector2.ZERO, mouse_decay * mouse_clamp * delta)
+	if mouse_raw != Vector2.ZERO && Input.get_last_mouse_screen_velocity() != Vector2.ZERO:
+		mouse_raw = mouse_raw.lerp(Vector2.ZERO, delta * mouse_decay)
+		if mouse_raw.is_equal_approx(Vector2.ZERO): mouse_raw = Vector2.ZERO
 		match mouse_stick:
-				Stick.LEFT:
-					_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, mouse_raw.x)
-					_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, mouse_raw.y)
-				Stick.RIGHT:
-					_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, mouse_raw.x)
-					_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, mouse_raw.y)
+			Stick.LEFT:
+				_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_X, mouse_raw.x)
+				_update_axis(KEYBOARD_INDEX, AxisType.L_STICK_Y, mouse_raw.y)
+			Stick.RIGHT:
+				_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_X, mouse_raw.x)
+				_update_axis(KEYBOARD_INDEX, AxisType.R_STICK_Y, mouse_raw.y)
 
 func _physics_process(delta: float) -> void:
 	for device: StickeyDevice in devices.values():
