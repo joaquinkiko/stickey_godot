@@ -72,8 +72,19 @@ class StickeyDevice extends RefCounted:
 		else: return r_trigger_raw
 	## Applies vibration to gamepad
 	func rumble(weak_magnitude: float = 0.5, strong_magnitude: float = 0.3, length: float = 0.1) -> void:
-		if index < 0: return
-		Input.start_joy_vibration(index, weak_magnitude, strong_magnitude, length)
+		if index == KEYBOARD_INDEX:
+			Input.vibrate_handheld(
+				int(length * 1000),
+				(strong_magnitude * 0.75) + (weak_magnitude * 0.25)
+			)
+			if StickeyInputManager.devices.has(StickeyInputManager.keyboard_shared_device):
+				StickeyInputManager.devices[StickeyInputManager.keyboard_shared_device].rumble(
+					weak_magnitude,
+					strong_magnitude,
+					length
+				)
+		else:
+			Input.start_joy_vibration(index, weak_magnitude, strong_magnitude, length)
 	## Access input mask from [param frames_ago]. Returns 0 if older than input history
 	func get_old_input_mask(frames_ago: int) -> int:
 		frames_ago = clampi(frames_ago, 1, StickeyInputManager.input_history_buffer_size - 1)
@@ -356,12 +367,14 @@ func _init() -> void:
 	input_history_buffer_size = ProjectSettings.get_setting("stickey_input/general/input_history/buffer_frames", 60)
 	match OS.get_name():
 		"Windows", "macOS", "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD", "Web":
-			connect_keyboard_device()
+			connect_keyboard_device(&"Keyboard")
 			is_keyboard_primary = Input.get_connected_joypads().is_empty()
 		"Android", "iOS":
-			pass ## Eventually this is where we could initialize touch screen input?
+			connect_keyboard_device(&"Handheld")
+			is_keyboard_primary = Input.get_connected_joypads().is_empty()
 		_:
 			pass ## This would be unaccounted for custom console builds
+	_initialize_default_mappings()
 	Input.joy_connection_changed.connect(_joy_connection_changed)
 
 func _joy_connection_changed(index: int, connected: bool) -> void:
@@ -514,16 +527,15 @@ func _physics_process(delta: float) -> void:
 
 ## Adds keyboard device. This is typically done automatically on initialization, 
 ## and shouldn't need to be recalled unless keyboard was manually disconnected.
-func connect_keyboard_device() -> void:
+func connect_keyboard_device(display_name: StringName) -> void:
 	devices[KEYBOARD_INDEX] = StickeyDevice.new()
 	devices[KEYBOARD_INDEX].index = KEYBOARD_INDEX
-	devices[KEYBOARD_INDEX].display_name = &"Keyboard"
+	devices[KEYBOARD_INDEX].display_name = display_name
 	devices[KEYBOARD_INDEX].type = DeviceType.KEYBOARD
 	devices[KEYBOARD_INDEX].input_history.resize(input_history_buffer_size)
-	_initialize_default_keyboard_mappings()
 
 ## Loads [ConfigFile] with input mappings at the path of Project Setting "stickey_input/general/serialization/default_mappings_path"
-func _initialize_default_keyboard_mappings() -> void:
+func _initialize_default_mappings() -> void:
 	var path: String = ProjectSettings.get_setting("stickey_input/general/serialization/default_mappings_path", "res://addons/stickey/default_mappings.cfg")
 	if !FileAccess.file_exists(path): return
 	var config_file := ConfigFile.new()
