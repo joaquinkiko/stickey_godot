@@ -1,6 +1,7 @@
 extends Node
 
 const KEYBOARD_INDEX: int = -1
+const MAX_INPUT_TYPES: int = 64
 
 ## Represents a connected device
 class StickeyDevice extends RefCounted:
@@ -483,60 +484,14 @@ func connect_keyboard_device() -> void:
 	devices[KEYBOARD_INDEX].input_history.resize(input_history_buffer_size)
 	_initialize_default_keyboard_mappings()
 
-## Set default keyboard mappings. FOR DEV PURPOSES, will be replaced by CFG loading!!!
+## Loads [ConfigFile] with input mappings at the path of Project Setting "stickey_input/general/serialization/default_mappings_path"
 func _initialize_default_keyboard_mappings() -> void:
-	keyboard_mappings[KEY_SPACE] = InputType.SOUTH
-	keyboard_mappings[KEY_E] = InputType.EAST
-	keyboard_mappings[KEY_Q] = InputType.WEST
-	keyboard_mappings[KEY_R] = InputType.NORTH
-	
-	keyboard_mappings[KEY_TAB] = InputType.BACK
-	keyboard_mappings[KEY_ESCAPE] = InputType.START
-	
-	keyboard_mappings[KEY_C] = InputType.L_SHOULDER
-	keyboard_mappings[KEY_V] = InputType.R_SHOULDER
-	
-	keyboard_mappings[KEY_SHIFT] = InputType.L_STICK
-	keyboard_mappings[KEY_ALT] = InputType.R_STICK
-	mouse_mappings[MOUSE_BUTTON_MIDDLE] = InputType.R_STICK
-	
-	keyboard_mappings[KEY_F] = InputType.PADDLE_1
-	keyboard_mappings[KEY_T] = InputType.PADDLE_2
-	keyboard_mappings[KEY_G] = InputType.PADDLE_3
-	keyboard_mappings[KEY_X] = InputType.PADDLE_4
-	keyboard_mappings[KEY_Z] = InputType.TOUCH_PAD
-	
-	keyboard_mappings[KEY_1] = InputType.MISC_2
-	keyboard_mappings[KEY_2] = InputType.MISC_3
-	keyboard_mappings[KEY_3] = InputType.MISC_4
-	keyboard_mappings[KEY_4] = InputType.MISC_5
-	keyboard_mappings[KEY_5] = InputType.MISC_6
-	keyboard_mappings[KEY_6] = InputType.MISC_7
-	keyboard_mappings[KEY_7] = InputType.MISC_8
-	keyboard_mappings[KEY_8] = InputType.MISC_9
-	keyboard_mappings[KEY_9] = InputType.MISC_10
-	
-	mouse_mappings[MOUSE_BUTTON_LEFT] = InputType.R_TRIGGER
-	mouse_mappings[MOUSE_BUTTON_RIGHT] = InputType.L_TRIGGER
-	
-	mouse_mappings[MOUSE_BUTTON_WHEEL_UP] = InputType.UP_DIRECTION
-	mouse_mappings[MOUSE_BUTTON_WHEEL_DOWN] = InputType.DOWN_DIRECTION
-	keyboard_mappings[KEY_UP] = InputType.UP_DIRECTION
-	keyboard_mappings[KEY_LEFT] = InputType.LEFT_DIRECTION
-	keyboard_mappings[KEY_DOWN] = InputType.DOWN_DIRECTION
-	keyboard_mappings[KEY_RIGHT] = InputType.RIGHT_DIRECTION
-	mouse_mappings[MOUSE_BUTTON_WHEEL_LEFT] = InputType.LEFT_DIRECTION
-	mouse_mappings[MOUSE_BUTTON_WHEEL_RIGHT] = InputType.RIGHT_DIRECTION
-	
-	keyboard_mappings[KEY_W] = InputType.L_STICK_UP
-	keyboard_mappings[KEY_A] = InputType.L_STICK_LEFT
-	keyboard_mappings[KEY_S] = InputType.L_STICK_DOWN
-	keyboard_mappings[KEY_D] = InputType.L_STICK_RIGHT
-	
-	
-	
-	var cfg := serialize_input_mappings()
-	cfg.save("res://addons/stickey/default_mappings.cfg")
+	var path: String = ProjectSettings.get_setting("stickey_input/general/serialization/default_mappings_path", "res://addons/stickey/default_mappings.cfg")
+	if !FileAccess.file_exists(path): return
+	var config_file := ConfigFile.new()
+	var err := config_file.load(path)
+	if err == OK: deserialize_input_mappings(config_file)
+	else: printerr("Unable to deserialize input mappings: %s"%error_string(err))
 
 ## Updates device [member StickeyDevice.pressed_mask]
 func _update_button(device: int, input: InputType, pressed: bool) -> void:
@@ -793,7 +748,7 @@ func deserialize_input_mappings(config: ConfigFile) -> void:
 	var bindings: Dictionary[InputType, PackedStringArray]
 	for key in config.get_section_keys(ProjectSettings.get_setting("stickey_input/general/serialization/section_key", "InputMappings")):
 		var key_type: int = -1
-		for input in 32:
+		for input in MAX_INPUT_TYPES:
 			if get_input_type_string(input).to_pascal_case() == key:
 				key_type = input
 				break
