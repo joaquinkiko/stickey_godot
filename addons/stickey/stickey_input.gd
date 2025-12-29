@@ -813,12 +813,12 @@ func deserialize_input_mappings(config: ConfigFile) -> void:
 					"MouseWheelRight": mouse_mappings[MOUSE_BUTTON_WHEEL_RIGHT] = input
 					"MouseExtra1": mouse_mappings[MOUSE_BUTTON_XBUTTON1] = input
 					"MouseExtra2": mouse_mappings[MOUSE_BUTTON_XBUTTON2] = input
-					_: mouse_mappings[MOUSE_BUTTON_NONE] = input
 			elif bindings[input][n].begins_with("JoyButton"):
 				var value := bindings[input][n].trim_prefix("JoyButton")
 				if value.is_valid_int(): joy_remappings[value.to_int()] = input
 			else:
-				keyboard_mappings[OS.find_keycode_from_string(bindings[input][n])] = input
+				var value := OS.find_keycode_from_string(bindings[input][n])
+				if value != KEY_UNKNOWN: keyboard_mappings[OS.find_keycode_from_string(bindings[input][n])] = input
 
 ## Helps rebind keyboard mappings
 func rebind_key(key: Key, input: InputType) -> void:
