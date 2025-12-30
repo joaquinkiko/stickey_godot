@@ -188,7 +188,7 @@ class StickeyDevice extends RefCounted:
 			input_string = StickeyInputManager.get_input_type_string(input)
 		for extension: String in ["png", "svg", "jpg", "jpeg", "webp"]:
 			output = get_glyph("%s.%s"%[
-				input_string.validate_filename().to_snake_case(), 
+				input_string.remove_chars("-").validate_filename().to_snake_case(), 
 				extension]
 				)
 			if output != null: break
