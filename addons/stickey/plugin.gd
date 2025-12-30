@@ -28,13 +28,11 @@ const SETTING_NAME_GLYPHS_BASE_PATH := "stickey_input/general/glyph/base_path"
 const SETTING_VALUE_GLYPHS_BASE_PATH := "res://addons/stickey/default_glyphs"
 
 func _enable_plugin() -> void:
-	add_autoload_singleton("StickeyInputManager", "stickey_input.gd")
-	add_autoload_singleton("StickeyPlayerManager", "stickey_player.gd")
+	add_autoload_singleton("StickeyManager", "src/stickey_manager.gd")
 
 
 func _disable_plugin() -> void:
-	remove_autoload_singleton("StickeyInputManager")
-	remove_autoload_singleton("StickeyPlayerManager")
+	remove_autoload_singleton("StickeyManager")
 
 
 func _enter_tree() -> void:
