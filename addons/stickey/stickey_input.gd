@@ -242,8 +242,8 @@ enum InputType {
 	BACK = 4,
 	GUIDE = 5,
 	START = 6,
-	L_STICK = 7,
-	R_STICK = 8,
+	L_STICK_PRESS = 7,
+	R_STICK_PRESS = 8,
 	L_SHOULDER = 9,
 	R_SHOULDER = 10,
 	UP_DIRECTION = 11,		# Directional pad up
@@ -600,8 +600,8 @@ func get_input_type_string(input: InputType, device_type: DeviceType = DeviceTyp
 				InputType.BACK: return "View"
 				InputType.GUIDE: return "Home"
 				InputType.START: return "Menu"
-				InputType.L_STICK: return "Left Stick"
-				InputType.R_STICK: return "Right Stick"
+				InputType.L_STICK_PRESS: return "Left Stick Press"
+				InputType.R_STICK_PRESS: return "Right Stick Press"
 				InputType.L_SHOULDER: return "Left Bumper"
 				InputType.R_SHOULDER: return "Right Bumper"
 				InputType.UP_DIRECTION: return "D-Pad Up"
@@ -632,8 +632,8 @@ func get_input_type_string(input: InputType, device_type: DeviceType = DeviceTyp
 				InputType.BACK: return "Share"
 				InputType.GUIDE: return "Home"
 				InputType.START: return "Options"
-				InputType.L_STICK: return "L3"
-				InputType.R_STICK: return "R3"
+				InputType.L_STICK_PRESS: return "L3"
+				InputType.R_STICK_PRESS: return "R3"
 				InputType.L_SHOULDER: return "L1"
 				InputType.R_SHOULDER: return "R1"
 				InputType.UP_DIRECTION: return "D-Pad Up"
@@ -660,8 +660,8 @@ func get_input_type_string(input: InputType, device_type: DeviceType = DeviceTyp
 				InputType.NORTH: return "X"
 				InputType.BACK: return "-"
 				InputType.START: return "+"
-				InputType.L_STICK: return "R Stick"
-				InputType.R_STICK: return "L Stick"
+				InputType.L_STICK_PRESS: return "R Stick Press"
+				InputType.R_STICK_PRESS: return "L Stick Press"
 				InputType.L_SHOULDER: return "L"
 				InputType.R_SHOULDER: return "R"
 				InputType.UP_DIRECTION: return "D-Pad Up"
@@ -689,8 +689,8 @@ func get_input_type_string(input: InputType, device_type: DeviceType = DeviceTyp
 				InputType.BACK: return "View"
 				InputType.GUIDE: return "Steam"
 				InputType.START: return "Menu"
-				InputType.L_STICK: return "L3"
-				InputType.R_STICK: return "R4"
+				InputType.L_STICK_PRESS: return "L3"
+				InputType.R_STICK_PRESS: return "R3"
 				InputType.L_SHOULDER: return "L1"
 				InputType.R_SHOULDER: return "R1"
 				InputType.UP_DIRECTION: return "D-Pad Up"
@@ -721,8 +721,8 @@ func get_input_type_string(input: InputType, device_type: DeviceType = DeviceTyp
 				InputType.BACK: return "Back"
 				InputType.GUIDE: return "Guide"
 				InputType.START: return "Start"
-				InputType.L_STICK: return "Left Stick"
-				InputType.R_STICK: return "Right Stick"
+				InputType.L_STICK_PRESS: return "Left Stick Press"
+				InputType.R_STICK_PRESS: return "Right Stick Press"
 				InputType.L_SHOULDER: return "Left Shoulder"
 				InputType.R_SHOULDER: return "Right Shoulder"
 				InputType.UP_DIRECTION: return "D-Pad Up"
