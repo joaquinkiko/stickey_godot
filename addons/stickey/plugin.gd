@@ -25,7 +25,7 @@ const SETTING_VALUE_CONFIG_FILE_SECTION := "InputMappings"
 const SETTING_NAME_CONFIG_FILE_PATH := "stickey_input/general/serialization/default_mappings_path"
 const SETTING_VALUE_CONFIG_FILE_PATH := "res://addons/stickey/default_mappings.cfg"
 const SETTING_NAME_GLYPHS_BASE_PATH := "stickey_input/general/glyph/base_path"
-const SETTING_VALUE_GLYPHS_BASE_PATH := "res://addons/stickey/glyphs"
+const SETTING_VALUE_GLYPHS_BASE_PATH := "res://addons/stickey/default_glyphs"
 
 func _enable_plugin() -> void:
 	add_autoload_singleton("StickeyInputManager", "stickey_input.gd")
