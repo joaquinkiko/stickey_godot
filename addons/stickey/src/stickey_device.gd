@@ -1,4 +1,4 @@
-## Represents a connected device
+## Represents a unique input device
 class_name StickeyDevice extends RefCounted
 
 ## Device input index
@@ -7,7 +7,6 @@ var index: int
 var display_name: StringName
 ## Gamepad type
 var type: Stickey.DeviceType
-
 ## Pressed input mask
 var pressed_mask: int = 0
 ## Raw left stick direction
@@ -24,11 +23,13 @@ var input_history: PackedInt32Array
 var input_history_index: int = 0
 
 func _to_string() -> String: return "%s (%s)"%[display_name, index]
+
 ## Returns debug info on current inputs
 func get_debug_input() -> String:
 	return "LS:%s RS:%s LT:%s RT:%s B:%s"%[
 		get_l_stick(), get_r_stick(), get_l_trigger(), get_r_trigger(), pressed_mask
 		]
+
 ## Returns true if input is currently being pressed
 func is_pressed(input: Stickey.InputType) -> bool:
 	match input:
@@ -41,6 +42,7 @@ func is_pressed(input: Stickey.InputType) -> bool:
 		Stickey.InputType.R_STICK_LEFT: return r_stick_raw.y < 0
 		Stickey.InputType.R_STICK_RIGHT: return r_stick_raw.y > 0
 		_: return pressed_mask & (1 << input) != 0
+
 ## Returns left stick direction
 func get_l_stick(normalized := true) -> Vector2:
 	var length := l_stick_raw.length()
@@ -49,6 +51,7 @@ func get_l_stick(normalized := true) -> Vector2:
 		return l_stick_raw.normalized() * clampf((length - Stickey.left_stick_deadzone) / (1.0 - Stickey.left_stick_deadzone), 0, 1)
 	else:
 		return l_stick_raw
+
 ## Returns right stick direction
 func get_r_stick(normalized := true) -> Vector2:
 	var length := r_stick_raw.length()
@@ -57,14 +60,17 @@ func get_r_stick(normalized := true) -> Vector2:
 		return r_stick_raw.normalized() * clampf((length - Stickey.right_stick_deadzone) / (1.0 - Stickey.right_stick_deadzone), 0, 1)
 	else:
 		return r_stick_raw
+
 ## Returns left trigger pressure
 func get_l_trigger() -> float:
 	if l_trigger_raw <= Stickey.trigger_deadzone: return 0
 	else: return l_trigger_raw
+
 ## Returns right trigger pressure
 func get_r_trigger() -> float:
 	if r_trigger_raw <= Stickey.trigger_deadzone: return 0
 	else: return r_trigger_raw
+
 ## Applies vibration to gamepad
 func rumble(weak_magnitude: float = 0.5, strong_magnitude: float = 0.3, length: float = 0.1) -> void:
 	if index == Stickey.KEYBOARD_INDEX:
@@ -80,10 +86,12 @@ func rumble(weak_magnitude: float = 0.5, strong_magnitude: float = 0.3, length: 
 			)
 	else:
 		Input.start_joy_vibration(index, weak_magnitude, strong_magnitude, length)
+
 ## Access input mask from [param frames_ago]. Returns 0 if older than input history
 func get_old_input_mask(frames_ago: int) -> int:
 	frames_ago = clampi(frames_ago, 1, Stickey.input_history_buffer_size - 1)
 	return input_history[(input_history_index - frames_ago + Stickey.input_history_buffer_size) % Stickey.input_history_buffer_size]
+
 ## Returns true if input was pressed within [param frames_ago].
 func was_pressed(input: Stickey.InputType, frames_ago: int = 1) -> bool:
 	frames_ago = clampi(frames_ago, 1, Stickey.input_history_buffer_size)
@@ -91,6 +99,7 @@ func was_pressed(input: Stickey.InputType, frames_ago: int = 1) -> bool:
 		if (get_old_input_mask(i + 1) & (1 << input) == 0) && (get_old_input_mask(i) & (1 << input) != 0):
 			return true
 	return false
+
 ## Returns true if input was released within [param frames_ago].
 func was_released(input: Stickey.InputType, frames_ago: int = 1) -> bool:
 	frames_ago = clampi(frames_ago, 1, Stickey.input_history_buffer_size)
@@ -98,12 +107,15 @@ func was_released(input: Stickey.InputType, frames_ago: int = 1) -> bool:
 		if (get_old_input_mask(i + 1) & (1 << input) != 0) && (get_old_input_mask(i) & (1 << input) == 0):
 			return true
 	return false
+
 ## Return true if input was just pressed this past frame
 func was_just_pressed(input: Stickey.InputType) -> bool:
 	return (get_old_input_mask(1) & (1 << input) == 0) && (pressed_mask & (1 << input) != 0)
+
 ## Return true if input was just released this past frame
 func was_just_released(input: Stickey.InputType) -> bool:
 	return (get_old_input_mask(1) & (1 << input) != 0) && (pressed_mask & (1 << input) == 0)
+
 ## Returns true if input is pressed, and has been pressed for at least [param frame_count] frames
 func was_held_for(input: Stickey.InputType, frame_count: int = 1) -> bool:
 	frame_count = clampi(frame_count, 1, Stickey.input_history_buffer_size)
@@ -112,6 +124,7 @@ func was_held_for(input: Stickey.InputType, frame_count: int = 1) -> bool:
 		if get_old_input_mask(i) & (1 << input) == 0:
 			return false
 	return true
+
 ## Returns number of times pressed within last [param frame_count] frames
 func get_times_pressed(input: Stickey.InputType, frame_count: int = 1) -> int:
 	var count: int = 0
@@ -120,6 +133,7 @@ func get_times_pressed(input: Stickey.InputType, frame_count: int = 1) -> int:
 		if (get_old_input_mask(i + 1) & (1 << input) == 0) && (get_old_input_mask(i) & (1 << input) != 0):
 			count += 1
 	return count
+
 ## Returns [Texture2D] for texture path based on input type, or null if path can't be found.
 ## This uses Project Setting "stickey_input/general/glyph/base_path" as the base directory,
 ## device type as sub directory (typically "keyboard", "xbox", "switch", "playstation", or "generic",
@@ -149,6 +163,7 @@ func get_glyph(texture_path: String) -> Texture2D:
 				var raw_image := Image.load_from_file("%s/%s/%s"%[base_path, device_path, texture_path])
 				return ImageTexture.create_from_image(raw_image)
 	return null
+
 ## Shorthand of [method get_texture] to load texture "device" (intended as image of device)
 func get_device_glyph() -> Texture2D:
 	var output: Texture2D
@@ -156,6 +171,7 @@ func get_device_glyph() -> Texture2D:
 		output = get_glyph("%s.%s"%["device", extension])
 		if output != null: break
 	return output
+
 ## Uses [method get_texture] to get image of input binding
 func get_input_glyph(input: Stickey.InputType) -> Texture2D:
 	var output: Texture2D
@@ -188,6 +204,7 @@ func get_input_glyph(input: Stickey.InputType) -> Texture2D:
 			)
 		if output != null: break
 	return output
+
 ## Returns string representing input binding's name based on device type and mappings.
 ## Returns empty string if input is unmapped.
 func get_input_string(input: Stickey.InputType) -> String:

@@ -1,9 +1,11 @@
-##
+## Core static class for SticKey input handling
 class_name Stickey
 
-
+## Device index for keyboard device
 const KEYBOARD_INDEX: int = -1
+## Total possible input types
 const MAX_INPUT_TYPES: int = 64
+## Total inputs present in 32-bit int mask
 const MAX_INPUT_MASK_BITS: int = 32
 
 ## Button inputs
@@ -101,7 +103,6 @@ static var mouse_clamp: float
 ## Number of physics frames to store input history for.
 ## Value loaded from [ProjectSettings] on [method _init].
 static var input_history_buffer_size: int
-
 ## Connected devices, including keyboard
 static var devices: Dictionary[int, StickeyDevice]
 ## Device index to share keyboard input with-- use -1 to not share
@@ -120,7 +121,6 @@ static var mouse_mappings: Dictionary[MouseButton, InputType]
 static var joy_remappings: Dictionary[JoyButton, InputType]
 ## Bitmask used internally for mapping keyboard to stick axis
 static var _key_to_axis_mask: int
-
 
 ## Adds keyboard device. This is typically done automatically on initialization, 
 ## and shouldn't need to be recalled unless keyboard was manually disconnected.
