@@ -8,3 +8,4 @@ export_presets.cfg
 project.godot
 test/
 .builds/
+*.import
