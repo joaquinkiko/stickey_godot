@@ -11,3 +11,4 @@ This plugin is designed for **[Godot 4.5+](https://godotengine.org/download)**
 - Rumble using single magnitude
 - Rebinder UI element
 - Mouse captured/free/hidden automatic states
+- Allow JSON serialization option
