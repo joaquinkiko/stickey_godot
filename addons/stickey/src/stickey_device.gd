@@ -196,72 +196,27 @@ func get_times_pressed(input: Stickey.InputType, frame_count: int = 1) -> int:
 ## but this can also be snake_case version of device's SDL name such as "ps_4_controller").
 ## Initially this will use [ResourceLoader], but it will also attempt to load manually as an [ImageTexture].
 func get_glyph(texture_path: String) -> Texture2D:
-	if !texture_path.is_valid_filename(): return null
 	var base_path: String = ProjectSettings.get_setting("stickey_input/general/glyph/base_path", "res://")
-	if !DirAccess.dir_exists_absolute(base_path): return null
-	var device_path: String
-	if DirAccess.dir_exists_absolute("%s/%s"%[base_path, display_name.to_snake_case()]):
-		device_path = display_name.to_snake_case()
-	else:
-		match type:
-			Stickey.DeviceType.KEYBOARD: device_path = "keyboard"
-			Stickey.DeviceType.XBOX: device_path = "xbox"
-			Stickey.DeviceType.SWITCH: device_path = "switch"
-			Stickey.DeviceType.PLAYSTATION: device_path = "playstation"
-			Stickey.DeviceType.STEAMDECK: device_path = "steam_deck"
-			_: device_path = "generic"
-	## If resource cannot be found for specific device, fallback in searching "generic" sub-directory
-	if !ResourceLoader.exists("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D") && !FileAccess.file_exists("%s/%s/%s"%[base_path, device_path, texture_path]):
-		device_path = "generic"
-	if ResourceLoader.exists("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D"):
-		return ResourceLoader.load("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D")
-	elif FileAccess.file_exists("%s/%s/%s"%[base_path, device_path, texture_path]):
-		for extension: String in ["png", "svg", "jpg", "jpeg", "webp"]:
-			if texture_path.get_extension() == extension:
-				var raw_image := Image.load_from_file("%s/%s/%s"%[base_path, device_path, texture_path])
-				return ImageTexture.create_from_image(raw_image)
-	return null
+	return Stickey.get_glyph(
+		ProjectSettings.get_setting("stickey_input/general/glyph/base_path", "res://"),
+		type,
+		display_name.to_snake_case()
+		)
 
 ## Shorthand of [method get_texture] to load texture "device" (intended as image of device)
 func get_device_glyph() -> Texture2D:
-	var output: Texture2D
-	for extension: String in ["png", "svg", "jpg", "jpeg", "webp"]:
-		output = get_glyph("%s.%s"%["device", extension])
-		if output != null: break
-	return output
+	return Stickey.get_device_glyph(
+		type,
+		display_name.to_snake_case()
+		)
 
 ## Uses [method get_texture] to get image of input binding
 func get_input_glyph(input: Stickey.InputType) -> Texture2D:
-	var output: Texture2D
-	var input_string: String
-	if type == Stickey.DeviceType.KEYBOARD:
-		if Stickey.keyboard_mappings.values().has(input):
-			var key: Key = Stickey.keyboard_mappings.find_key(input)
-			input_string = OS.get_keycode_string(key)
-		elif Stickey.mouse_mappings.keys().has(input):
-			var button: MouseButton = Stickey.mouse_mappings.find_key(input)
-			match button:
-				MOUSE_BUTTON_LEFT: input_string = "mouse_left"
-				MOUSE_BUTTON_RIGHT: input_string = "mouse_right"
-				MOUSE_BUTTON_MIDDLE: input_string = "mouse_middle"
-				MOUSE_BUTTON_WHEEL_UP : input_string = "mouse_wheel_up"
-				MOUSE_BUTTON_WHEEL_DOWN: input_string = "mouse_wheel_down"
-				MOUSE_BUTTON_WHEEL_LEFT: input_string = "mouse_wheel_left"
-				MOUSE_BUTTON_WHEEL_RIGHT: input_string = "mouse_wheel_right"
-				MOUSE_BUTTON_XBUTTON1: input_string = "mouse_xbutton_1"
-				MOUSE_BUTTON_XBUTTON2: input_string = "mouse_xbutton_2"
-				_: input_string = "mouse"
-		else: input_string = "unmapped"
-	else:
-		if Stickey.joy_remappings.has(input): input = Stickey.joy_remappings[input]
-		input_string = Stickey.get_input_type_string(input)
-	for extension: String in ["png", "svg", "jpg", "jpeg", "webp"]:
-		output = get_glyph("%s.%s"%[
-			input_string.remove_chars("-").validate_filename().to_snake_case(), 
-			extension]
-			)
-		if output != null: break
-	return output
+	return Stickey.get_input_glyph(
+		input,
+		type,
+		display_name.to_snake_case()
+		)
 
 ## Returns string representing input binding's name based on device type and mappings.
 ## Returns empty string if input is unmapped.
