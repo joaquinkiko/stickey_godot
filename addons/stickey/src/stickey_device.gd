@@ -210,7 +210,9 @@ func get_glyph(texture_path: String) -> Texture2D:
 			Stickey.DeviceType.PLAYSTATION: device_path = "playstation"
 			Stickey.DeviceType.STEAMDECK: device_path = "steam_deck"
 			_: device_path = "generic"
-	if !DirAccess.dir_exists_absolute("%s/%s"%[base_path, device_path]): device_path = "generic"
+	## If resource cannot be found for specific device, fallback in searching "generic" sub-directory
+	if !ResourceLoader.exists("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D") && !FileAccess.file_exists("%s/%s/%s"%[base_path, device_path, texture_path]):
+		device_path = "generic"
 	if ResourceLoader.exists("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D"):
 		return ResourceLoader.load("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D")
 	elif FileAccess.file_exists("%s/%s/%s"%[base_path, device_path, texture_path]):
