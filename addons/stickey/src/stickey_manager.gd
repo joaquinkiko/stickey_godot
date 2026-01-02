@@ -195,9 +195,6 @@ func _input_mouse_button(event: InputEventMouseButton) -> void:
 ## Handles [InputEvent] for mouse motion
 func _input_mouse_motion(event: InputEventMouseMotion) -> void:
 	if !Stickey.devices.has(KEYBOARD_INDEX): return
-	if !is_keyboard_primary:
-		is_keyboard_primary = true
-		primary_device_changed.emit(true)
 	mouse_raw = event.screen_relative * mouse_sensitivity
 	mouse_raw = mouse_raw.clampf(-mouse_clamp, mouse_clamp)
 	match mouse_stick:
