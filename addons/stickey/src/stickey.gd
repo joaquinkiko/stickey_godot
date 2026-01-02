@@ -313,11 +313,17 @@ static func get_input_glyph(input: Stickey.InputType, device_type: DeviceType, o
 	var output: Texture2D
 	var input_string: String
 	if device_type == Stickey.DeviceType.KEYBOARD:
-		if Stickey.keyboard_mappings.values().has(input):
-			var key: Key = Stickey.keyboard_mappings.find_key(input)
+		if keyboard_mappings.values().has(input):
+			var key: Key
+			if keyboard_mappings.find_key(input) != null:
+				key = keyboard_mappings.find_key(input)
+			else: key = KEY_UNKNOWN
 			input_string = OS.get_keycode_string(key)
-		elif Stickey.mouse_mappings.keys().has(input):
-			var button: MouseButton = Stickey.mouse_mappings.find_key(input)
+		elif mouse_mappings.values().has(input):
+			var button: MouseButton
+			if mouse_mappings.find_key(input) != null:
+				button = Stickey.mouse_mappings.find_key(input)
+			else: MOUSE_BUTTON_NONE
 			match button:
 				MOUSE_BUTTON_LEFT: input_string = "mouse_left"
 				MOUSE_BUTTON_RIGHT: input_string = "mouse_right"
@@ -328,10 +334,10 @@ static func get_input_glyph(input: Stickey.InputType, device_type: DeviceType, o
 				MOUSE_BUTTON_WHEEL_RIGHT: input_string = "mouse_wheel_right"
 				MOUSE_BUTTON_XBUTTON1: input_string = "mouse_xbutton_1"
 				MOUSE_BUTTON_XBUTTON2: input_string = "mouse_xbutton_2"
-				_: input_string = "mouse"
-		else: input_string = "unmapped"
+				_: input_string = "unknown"
+		else: input_string = "unknown"
 	else:
-		if Stickey.joy_remappings.has(input): input = Stickey.joy_remappings[input]
+		if joy_remappings.has(input): input = Stickey.joy_remappings[input]
 		input_string = Stickey.get_input_type_string(input)
 	for extension: String in ["png", "svg", "jpg", "jpeg", "webp"]:
 		output = get_glyph(
