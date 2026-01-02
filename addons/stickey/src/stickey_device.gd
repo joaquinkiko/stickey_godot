@@ -63,7 +63,7 @@ func _init(init_index: int, init_display_name: StringName) -> void:
 	_index = init_index
 	_display_name = init_display_name
 	if display_name == &"Keyboard" || display_name == &"Handheld":  _type = Stickey.DeviceType.KEYBOARD
-	if display_name.contains("Xbox"): _type = Stickey.DeviceType.XBOX
+	elif display_name.contains("Xbox"): _type = Stickey.DeviceType.XBOX
 	elif display_name.contains("Switch"): _type = Stickey.DeviceType.SWITCH
 	elif display_name.contains("PS"): _type = Stickey.DeviceType.PLAYSTATION
 	elif display_name.contains("Steam Deck"): _type = Stickey.DeviceType.STEAMDECK

@@ -62,12 +62,13 @@ enum AxisType {
 	}
 ## Helper to determine type of device for UI
 enum DeviceType {
-	KEYBOARD,
-	GENERIC,
-	XBOX,
-	SWITCH,
-	PLAYSTATION,
-	STEAMDECK
+	AUTOMATIC = -2, # Used by [StickeyGlyphRect]
+	KEYBOARD = -1,
+	GENERIC = 0,
+	XBOX = 1,
+	SWITCH = 2,
+	PLAYSTATION = 3,
+	STEAMDECK = 4
 	}
 
 ## Connected devices, including keyboard
@@ -272,7 +273,7 @@ static func get_axis_type_string(axis: AxisType) -> String:
 ## Initially this will use [ResourceLoader], but it will also attempt to load manually as an [ImageTexture].
 static func get_glyph(texture_path: String, device_type: DeviceType, override_path: String = "") -> Texture2D:
 	if !texture_path.is_valid_filename(): return null
-	var base_path: String = ProjectSettings.get_setting("stickey_input/general/glyph/base_path", "res://")
+	var base_path: String = ProjectSettings.get_setting("stickey_input/general/glyph/base_path", "res://addons/stickey/default_glyphs")
 	if !DirAccess.dir_exists_absolute(base_path): return null
 	var device_path: String
 	if !override_path.is_empty() && DirAccess.dir_exists_absolute("%s/%s"%[base_path, override_path]):
@@ -287,6 +288,8 @@ static func get_glyph(texture_path: String, device_type: DeviceType, override_pa
 			_: device_path = "generic"
 	## If resource cannot be found for specific device, fallback in searching "generic" sub-directory
 	if !ResourceLoader.exists("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D") && !FileAccess.file_exists("%s/%s/%s"%[base_path, device_path, texture_path]):
+		if device_type == Stickey.DeviceType.KEYBOARD:
+			device_path = "%s.%s"%["unknown", texture_path.get_extension()]
 		device_path = "generic"
 	if ResourceLoader.exists("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D"):
 		return ResourceLoader.load("%s/%s/%s"%[base_path, device_path, texture_path], "Texture2D")
