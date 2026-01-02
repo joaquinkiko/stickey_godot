@@ -60,12 +60,6 @@ enum AxisType {
 	L_TRIGGER = 4,
 	R_TRIGGER = 5,
 	}
-## Joypad sticks
-enum Stick {
-	NONE = -1,
-	LEFT = 0,
-	RIGHT = 1,
-	}
 ## Helper to determine type of device for UI
 enum DeviceType {
 	KEYBOARD,
@@ -76,109 +70,16 @@ enum DeviceType {
 	STEAMDECK
 	}
 
-## Threshold for registering trigger as full button press (not deadzone).
-## Value loaded from [ProjectSettings] on [method _init].
-static var trigger_press_threshold: float
-## Threshold for registering trigger release.
-## Value loaded from [ProjectSettings] on [method _init].
-static var trigger_release_threshold: float
-## Left stick deadzone.
-## Value loaded from [ProjectSettings] on [method _init].
-static var left_stick_deadzone: float
-## Right stick deadzone.
-## Value loaded from [ProjectSettings] on [method _init].
-static var right_stick_deadzone: float
-## Trigger deadzone (not to be confused with [member trigger_press_threshold].
-## Value loaded from [ProjectSettings] on [method _init].
-static var trigger_deadzone: float
-## Mouse sensitivity when translated to stick axis.
-## Value loaded from [ProjectSettings] on [method _init].
-static var mouse_sensitivity: float
-## Decay for smoothing mouse movement (higher number results in quicker slow down).
-## Value loaded from [ProjectSettings] on [method _init].
-static var mouse_decay: float
-## Clamps fast mouse movement to this value (relative to max joystick movement of 1.0).
-## Value loaded from [ProjectSettings] on [method _init].
-static var mouse_clamp: float
-## Number of physics frames to store input history for.
-## Value loaded from [ProjectSettings] on [method _init].
-static var input_history_buffer_size: int
 ## Connected devices, including keyboard
 static var devices: Dictionary[int, StickeyDevice]
 ## Device index to share keyboard input with-- use -1 to not share
 static var keyboard_shared_device: int = 0
-## When true keyboard device has been used more recently than [member keyboard_shared_device]
-static var is_keyboard_primary: bool = false
-## Raw mouse motion
-static var mouse_raw := Vector2.ZERO
-## Stick to translate mouse motion too
-static var mouse_stick: Stick = Stick.RIGHT
 ## Key mappings for inputs
 static var keyboard_mappings: Dictionary[Key, InputType]
 ## Mouse button mappings for inputs
 static var mouse_mappings: Dictionary[MouseButton, InputType]
 ## Remappings for joy buttons
 static var joy_remappings: Dictionary[JoyButton, InputType]
-## Bitmask used internally for mapping keyboard to stick axis
-static var _key_to_axis_mask: int
-
-## Adds keyboard device. This is typically done automatically on initialization, 
-## and shouldn't need to be recalled unless keyboard was manually disconnected.
-static func connect_keyboard_device(display_name: StringName) -> void:
-	devices[KEYBOARD_INDEX] = StickeyDevice.new()
-	devices[KEYBOARD_INDEX].index = KEYBOARD_INDEX
-	devices[KEYBOARD_INDEX].display_name = display_name
-	devices[KEYBOARD_INDEX].type = DeviceType.KEYBOARD
-	devices[KEYBOARD_INDEX].input_history.resize(input_history_buffer_size)
-
-## Loads [ConfigFile] with input mappings at the path of Project Setting "stickey_input/general/serialization/default_mappings_path"
-static func _initialize_default_mappings() -> void:
-	var path: String = ProjectSettings.get_setting("stickey_input/general/serialization/default_mappings_path", "res://addons/stickey/default_mappings.cfg")
-	if !FileAccess.file_exists(path): return
-	var config_file := ConfigFile.new()
-	var err := config_file.load(path)
-	if err == OK: deserialize_input_mappings(config_file)
-	else: printerr("Unable to deserialize input mappings: %s"%error_string(err))
-
-## Updates device [member StickeyDevice.pressed_mask]
-static func _update_button(device: int, input: InputType, pressed: bool) -> void:
-	if input >= MAX_INPUT_MASK_BITS: return
-	var bit := 1 << int(input)
-	if pressed: devices[device].pressed_mask |= bit
-	else: devices[device].pressed_mask &= ~bit
-	# Send keyboard input to gamepad
-	if device == KEYBOARD_INDEX && keyboard_shared_device >= 0 && devices.has(keyboard_shared_device):
-		_update_button(keyboard_shared_device, input, pressed)
-
-## Updates device axis values
-static func _update_axis(device: int, axis: AxisType, value: float) -> void:
-	match axis:
-		AxisType.L_STICK_X, AxisType.L_STICK_Y, AxisType.R_STICK_X, AxisType.R_STICK_Y:
-			if abs(value) < 1e-4: value = 0
-	match axis:
-		AxisType.L_STICK_X:
-			devices[device].l_stick_raw.x = value
-		AxisType.L_STICK_Y:
-			devices[device].l_stick_raw.y = value
-		AxisType.R_STICK_X:
-			devices[device].r_stick_raw.x = value
-		AxisType.R_STICK_Y:
-			devices[device].r_stick_raw.y = value
-		AxisType.L_TRIGGER:
-			devices[device].l_trigger_raw = value
-		AxisType.R_TRIGGER:
-			devices[device].r_trigger_raw = value
-	if device == KEYBOARD_INDEX && keyboard_shared_device >= 0 && devices.has(keyboard_shared_device):
-		_update_axis(keyboard_shared_device, axis, value)
-
-## Quick function for handling [member _key_to_axis_mask] value and updating axis 
-static func _update_key_axis(pressed: bool, axis: AxisType, dir_bit: int, inv_dir_bit: int, multiplier: float) -> void:
-	if pressed:
-		_key_to_axis_mask |= dir_bit
-		_update_axis(KEYBOARD_INDEX, axis, int(!_key_to_axis_mask & inv_dir_bit) * multiplier)
-	else:
-		_key_to_axis_mask &= ~dir_bit
-		_update_axis(KEYBOARD_INDEX, axis, int(_key_to_axis_mask & inv_dir_bit) * -multiplier)
 
 ## Stop vibrations on all devices
 static func stop_all_rumble() -> void:
