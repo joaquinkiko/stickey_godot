@@ -112,6 +112,7 @@ func _notification(what: int) -> void:
 func _joy_connection_changed(index: int, connected: bool) -> void:
 	if connected:
 		var device := StickeyDevice.new(index, Input.get_joy_name(index))
+		Stickey.devices[index] = device
 		device_connected.emit(index)
 		print("Device connected: %s (%s)"%[device.display_name, index])
 		if Stickey.keyboard_shared_device == index && is_keyboard_primary:
