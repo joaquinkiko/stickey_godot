@@ -82,7 +82,11 @@ func _init() -> void:
 		Stickey.get_input_type_string(n).replace("-", "").validate_filename().to_snake_case()
 		]
 		var value: String = ProjectSettings.get_setting(path, "")
-		if !value.is_empty(): Stickey.input_nicknames.set(value, n)
+		if !value.is_empty():
+			if Stickey.input_nicknames.has(value):
+				push_warning("Duplicate input nicknames '%s'!"%value)
+			else:
+				Stickey.input_nicknames.set(value, n)
 
 func _process(delta: float) -> void:
 	if mouse_raw != Vector2.ZERO && Input.get_last_mouse_screen_velocity() != Vector2.ZERO:
