@@ -438,3 +438,9 @@ static func rebind_joy(joy_button: JoyButton, input: InputType) -> void:
 ## or returns [member UNKNOWN_INPUT_VALUE] if cannot retrieve
 static func get_input(nickname: String) -> InputType:
 	return input_nicknames.get(nickname, UNKNOWN_INPUT_VALUE)
+
+## Safely retrieve [member devices] or matching keyboard from [member keyboard_shared_device],
+## returning a placeholder device, if device still cannot be found
+static func get_device(index: int = 0) -> StickeyDevice:
+	if index == keyboard_shared_device && !devices.has(index): index = KEYBOARD_INDEX
+	return devices.get(index, StickeyDevice.new(0, "Missing Device"))
