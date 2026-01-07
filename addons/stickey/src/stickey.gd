@@ -7,6 +7,8 @@ const KEYBOARD_INDEX: int = -1
 const MAX_INPUT_TYPES: int = 64
 ## Total inputs present in 32-bit int mask
 const MAX_INPUT_MASK_BITS: int = 32
+## ERROR value for unknown [enum InputType]
+const UNKNOWN_INPUT_VALUE: int = -1
 
 ## Button inputs
 enum InputType {
@@ -81,6 +83,8 @@ static var keyboard_mappings: Dictionary[Key, InputType]
 static var mouse_mappings: Dictionary[MouseButton, InputType]
 ## Remappings for joy buttons
 static var joy_remappings: Dictionary[JoyButton, InputType]
+## Short-hand names for [enum InputType] values
+static var input_nicknames: Dictionary[StringName, InputType]
 
 ## Stop vibrations on all devices
 static func stop_all_rumble() -> void:
@@ -429,3 +433,8 @@ static func rebind_mouse(mouse_button: MouseButton, input: InputType) -> void:
 ## Helps rebind joy remappings
 static func rebind_joy(joy_button: JoyButton, input: InputType) -> void:
 	joy_remappings[joy_button] = input
+
+## Safely retrieve [enum InputType] from [member input_nicknames],
+## or returns [member UNKNOWN_INPUT_VALUE] if cannot retrieve
+static func get_input(nickname: String) -> InputType:
+	return input_nicknames.get(nickname, UNKNOWN_INPUT_VALUE)

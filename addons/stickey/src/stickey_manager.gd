@@ -76,6 +76,13 @@ func _init() -> void:
 			push_warning("OS not currently accounted for by Stickey Manager")
 	_initialize_default_mappings()
 	Input.joy_connection_changed.connect(_joy_connection_changed)
+	for n in Stickey.MAX_INPUT_MASK_BITS:
+		var path: String = "%s/%s"%[
+		"stickey_input/input_nicknames",
+		Stickey.get_input_type_string(n).replace("-", "").validate_filename().to_snake_case()
+		]
+		var value: String = ProjectSettings.get_setting(path, "")
+		if !value.is_empty(): Stickey.input_nicknames.set(value, n)
 
 func _process(delta: float) -> void:
 	if mouse_raw != Vector2.ZERO && Input.get_last_mouse_screen_velocity() != Vector2.ZERO:

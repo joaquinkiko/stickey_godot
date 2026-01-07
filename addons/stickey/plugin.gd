@@ -26,6 +26,7 @@ const SETTING_NAME_CONFIG_FILE_PATH := "stickey_input/general/serialization/defa
 const SETTING_VALUE_CONFIG_FILE_PATH := "res://addons/stickey/default_mappings.cfg"
 const SETTING_NAME_GLYPHS_BASE_PATH := "stickey_input/general/glyph/base_path"
 const SETTING_VALUE_GLYPHS_BASE_PATH := "res://addons/stickey/default_glyphs"
+const SETTING_NAME_INPUT_NICKNAME_BASE := "stickey_input/input_nicknames"
 
 func _enable_plugin() -> void:
 	add_autoload_singleton("StickeyManager", "src/stickey_manager.gd")
@@ -140,4 +141,19 @@ func _enter_tree() -> void:
 		"name": SETTING_NAME_GLYPHS_BASE_PATH,
 		"type": TYPE_STRING,
 		"hint": PROPERTY_HINT_DIR
+	})
+	for n in Stickey.MAX_INPUT_MASK_BITS:
+		_add_setting_input_nickname(n)
+
+func _add_setting_input_nickname(input : Stickey.InputType) -> void:
+	var path: String = "%s/%s"%[
+		SETTING_NAME_INPUT_NICKNAME_BASE,
+		Stickey.get_input_type_string(input).replace("-", "").validate_filename().to_snake_case()
+		]
+	if !ProjectSettings.has_setting(path):
+		ProjectSettings.set_setting(path, "")
+	ProjectSettings.set_initial_value(path, "")
+	ProjectSettings.add_property_info({
+		"name": path,
+		"type": TYPE_STRING
 	})
