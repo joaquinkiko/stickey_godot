@@ -43,7 +43,7 @@ var is_keyboard_primary: bool = false
 ## Raw mouse motion
 var mouse_raw := Vector2.ZERO
 ## Stick to translate mouse motion too
-var mouse_stick: Stick = Stick.RIGHT
+var mouse_stick: Stick = Stick.NONE
 ## Bitmask used internally for mapping keyboard to stick axis
 var _key_to_axis_mask: int
 
@@ -142,14 +142,95 @@ func _input(event: InputEvent) -> void:
 		"InputEventJoypadButton": _input_joypad_button(event)
 		"InputEventJoypadMotion": _input_joypad_motion(event)
 
-## Loads [ConfigFile] with input mappings at the path of Project Setting "stickey_input/general/serialization/default_mappings_path"
+## Loads [ConfigFile] with input mappings at the path of Project Setting "stickey_input/general/serialization/user_mappings_path"
+## or loads default bindings from project settings if this [ConfigFile] cannot be found.
 func _initialize_default_mappings() -> void:
-	var path: String = ProjectSettings.get_setting("stickey_input/general/serialization/default_mappings_path", "res://addons/stickey/default_mappings.cfg")
-	if !FileAccess.file_exists(path): return
-	var config_file := ConfigFile.new()
-	var err := config_file.load(path)
-	if err == OK: Stickey.deserialize_input_mappings(config_file)
-	else: printerr("Unable to deserialize input mappings: %s"%error_string(err))
+	var mouse_motion_setting: int = ProjectSettings.get_setting("stickey_input/default_bindings/general/mouse_motion_input", Stick.RIGHT)
+	match mouse_motion_setting:
+		Stick.NONE, Stick.LEFT, Stick.RIGHT: mouse_stick = mouse_motion_setting
+	var path: String = ProjectSettings.get_setting("stickey_input/general/serialization/user_mappings_path", "user://input_mappings.cfg")
+	if FileAccess.file_exists(path):
+		var config_file := ConfigFile.new()
+		var err := config_file.load(path)
+		if err == OK:
+			Stickey.deserialize_input_mappings(config_file)
+			return
+		else: printerr("Unable to load user input mappings: %s"%error_string(err))
+	Stickey.keyboard_mappings.clear()
+	Stickey.mouse_mappings.clear()
+	for n in Stickey.InputType.values():
+		var default_keyboard: int = -1
+		match n:
+			Stickey.InputType.SOUTH: default_keyboard = KEY_SPACE
+			Stickey.InputType.EAST: default_keyboard = KEY_E
+			Stickey.InputType.WEST: default_keyboard = KEY_Q
+			Stickey.InputType.NORTH: default_keyboard = KEY_R
+			Stickey.InputType.BACK: default_keyboard = KEY_TAB
+			Stickey.InputType.START: default_keyboard = KEY_ESCAPE
+			Stickey.InputType.L_STICK_PRESS: default_keyboard = KEY_SHIFT
+			Stickey.InputType.R_STICK_PRESS: default_keyboard = KEY_ALT
+			Stickey.InputType.L_SHOULDER: default_keyboard = KEY_C
+			Stickey.InputType.R_SHOULDER: default_keyboard = KEY_V
+			Stickey.InputType.UP_DIRECTION: default_keyboard = KEY_UP
+			Stickey.InputType.DOWN_DIRECTION: default_keyboard = KEY_DOWN
+			Stickey.InputType.LEFT_DIRECTION: default_keyboard = KEY_LEFT
+			Stickey.InputType.RIGHT_DIRECTION: default_keyboard = KEY_RIGHT
+			Stickey.InputType.PADDLE_1: default_keyboard = KEY_F
+			Stickey.InputType.PADDLE_2: default_keyboard = KEY_T
+			Stickey.InputType.PADDLE_3: default_keyboard = KEY_G
+			Stickey.InputType.PADDLE_4: default_keyboard = KEY_X
+			Stickey.InputType.TOUCH_PAD: default_keyboard = KEY_Z
+			Stickey.InputType.MISC_2: default_keyboard = KEY_1
+			Stickey.InputType.MISC_3: default_keyboard = KEY_2
+			Stickey.InputType.MISC_4: default_keyboard = KEY_3
+			Stickey.InputType.MISC_5: default_keyboard = KEY_4
+			Stickey.InputType.MISC_6: default_keyboard = KEY_5
+			Stickey.InputType.MISC_7: default_keyboard = KEY_6
+			Stickey.InputType.MISC_8: default_keyboard = KEY_7
+			Stickey.InputType.MISC_9: default_keyboard = KEY_8
+			Stickey.InputType.MISC_10: default_keyboard = KEY_9
+			Stickey.InputType.L_STICK_UP: default_keyboard = KEY_W
+			Stickey.InputType.L_STICK_DOWN: default_keyboard = KEY_S
+			Stickey.InputType.L_STICK_LEFT: default_keyboard = KEY_A
+			Stickey.InputType.L_STICK_RIGHT: default_keyboard = KEY_D
+		var default_mouse: int = -1
+		match n:
+			Stickey.InputType.R_STICK_PRESS: default_mouse = MOUSE_BUTTON_MIDDLE
+			Stickey.InputType.UP_DIRECTION: default_mouse = MOUSE_BUTTON_WHEEL_UP
+			Stickey.InputType.DOWN_DIRECTION: default_mouse = MOUSE_BUTTON_WHEEL_DOWN
+			Stickey.InputType.LEFT_DIRECTION: default_mouse = MOUSE_BUTTON_WHEEL_LEFT
+			Stickey.InputType.RIGHT_DIRECTION: default_mouse = MOUSE_BUTTON_WHEEL_RIGHT
+			Stickey.InputType.L_TRIGGER: default_mouse = MOUSE_BUTTON_RIGHT
+			Stickey.InputType.R_TRIGGER: default_mouse = MOUSE_BUTTON_LEFT
+		var setting_path: String = "%s/%s"%[
+		"stickey_input/default_bindings/keyboard",
+		Stickey.get_input_type_string(n).replace("-", "").validate_filename().to_snake_case()
+		]
+		var setting_value: int = ProjectSettings.get_setting(setting_path, default_keyboard)
+		if setting_value != -1:
+			if Stickey.keyboard_mappings.has(setting_value):
+				push_warning("Keyboard mapping '%s' assigned to multiple inputs!"%OS.get_keycode_string(n))
+			Stickey.keyboard_mappings[setting_value] = n
+		setting_path = "%s/%s"%[
+		"stickey_input/default_bindings/mouse",
+		Stickey.get_input_type_string(n).replace("-", "").validate_filename().to_snake_case()
+		]
+		setting_value = ProjectSettings.get_setting(setting_path, default_mouse)
+		if setting_value != -1:
+			if Stickey.keyboard_mappings.has(setting_value):
+				var mouse_string: String
+				match n:
+					MOUSE_BUTTON_LEFT: mouse_string = "Mouse Button Left"
+					MOUSE_BUTTON_RIGHT: mouse_string = "Mouse Button Right"
+					MOUSE_BUTTON_MIDDLE: mouse_string = "Mouse Button Middle"
+					MOUSE_BUTTON_WHEEL_UP: mouse_string = "Mouse Wheel Up"
+					MOUSE_BUTTON_WHEEL_DOWN: mouse_string = "Mouse Wheel Down"
+					MOUSE_BUTTON_WHEEL_LEFT: mouse_string = "Mouse Wheel Left"
+					MOUSE_BUTTON_WHEEL_RIGHT: mouse_string = "Mouse Wheel Right"
+					MOUSE_BUTTON_XBUTTON1: mouse_string = "Mouse Extra Button 1"
+					MOUSE_BUTTON_XBUTTON2: mouse_string = "Mouse Extra Button 2"
+				push_warning("Mouse mapping '%s' assigned to multiple inputs!"%mouse_string)
+			Stickey.mouse_mappings[setting_value] = n
 
 ## Handles [InputEvent] for keyboard
 func _input_key(event: InputEventKey) -> void:
