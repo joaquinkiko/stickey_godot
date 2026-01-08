@@ -436,6 +436,7 @@ static func rebind_key(key: Key, input: InputType, auto_remap: bool = true) -> v
 			var old_button: Key = mouse_mappings.find_key(input)
 			mouse_mappings[old_button] = old_input
 	keyboard_mappings[key] = input
+	StickeyManager.input_mappings_changed.emit()
 
 ## Helps rebind mouse mappings, if [param auto_remap] is true, will swap any other matching buttons/keys
 static func rebind_mouse(mouse_button: MouseButton, input: InputType, auto_remap: bool = true) -> void:
@@ -449,6 +450,7 @@ static func rebind_mouse(mouse_button: MouseButton, input: InputType, auto_remap
 			var old_key: Key = keyboard_mappings.find_key(input)
 			keyboard_mappings[old_key] = old_input
 	mouse_mappings[mouse_button] = input
+	StickeyManager.input_mappings_changed.emit()
 
 ## Helps rebind joy remappings, if [param auto_remap] is true, will swap any other matching buttons
 static func rebind_joy(joy_button: JoyButton, input: InputType, auto_remap: bool = true) -> void:
@@ -459,6 +461,7 @@ static func rebind_joy(joy_button: JoyButton, input: InputType, auto_remap: bool
 			var old_button: Key = joy_remappings.find_key(input)
 			joy_remappings[old_button] = old_input
 	joy_remappings[joy_button] = input
+	StickeyManager.input_mappings_changed.emit()
 
 ## Safely retrieve [enum InputType] from [member input_nicknames],
 ## or returns [member UNKNOWN_INPUT_VALUE] if cannot retrieve

@@ -53,6 +53,8 @@ signal device_connected(index: int)
 signal device_disconnected(index: int)
 ## Emitted when [member keyboard_shared_device] swaps between keyboard and gamepad as current device
 signal primary_device_changed(is_keyboard: bool)
+## Emitted when input mappings are updated
+signal input_mappings_changed
 
 func _init() -> void:
 	trigger_press_threshold = ProjectSettings.get_setting("stickey_input/joystick/trigger/press_threshold", 0.5)

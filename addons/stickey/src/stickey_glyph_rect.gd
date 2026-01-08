@@ -54,6 +54,7 @@ func _ready() -> void:
 		StickeyManager.device_connected.connect(_device_connected)
 		StickeyManager.device_disconnected.connect(_device_disconnected)
 		StickeyManager.primary_device_changed.connect(_primary_device_changed)
+		StickeyManager.input_mappings_changed.connect(_input_mappings_changed)
 	update_glyph()
 
 func _device_connected(index: int) -> void:
@@ -63,6 +64,9 @@ func _device_disconnected(index: int) -> void:
 	update_glyph()
 
 func _primary_device_changed(is_keyboard: bool) -> void:
+	update_glyph()
+
+func _input_mappings_changed() -> void:
 	update_glyph()
 
 ## Updates currently displayed glyph. Typically called automatically
