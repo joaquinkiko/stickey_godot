@@ -377,7 +377,7 @@ static func serialize_input_mappings() -> ConfigFile:
 		bindings[joy_remappings[button]].append("JoyButton%s"%button)
 	var output := ConfigFile.new()
 	for input in bindings.keys():
-		var key: String = get_input_nickname(input)
+		var key: String = get_input_nickname(input) as String
 		if key.is_empty(): key = get_input_type_string(input).to_pascal_case()
 		output.set_value(
 			ProjectSettings.get_setting("stickey_input/general/serialization/section_key", "InputMappings"),
@@ -438,13 +438,13 @@ static func rebind_joy(joy_button: JoyButton, input: InputType) -> void:
 
 ## Safely retrieve [enum InputType] from [member input_nicknames],
 ## or returns [member UNKNOWN_INPUT_VALUE] if cannot retrieve
-static func get_input(nickname: String) -> InputType:
+static func get_input(nickname: StringName) -> InputType:
 	return input_nicknames.get(nickname, UNKNOWN_INPUT_VALUE)
 
 ## Safely retrieve [String] key from [member input_nicknames], returning "" if not found
-static func get_input_nickname(input: InputType) -> String:
+static func get_input_nickname(input: InputType) -> StringName:
 	if input_nicknames.values().has(input):
-		return input_nicknames.find_key(input) as String
+		return input_nicknames.find_key(input) as StringName
 	else: return ""
 
 ## Safely retrieve [member devices] or matching keyboard from [member keyboard_shared_device],
