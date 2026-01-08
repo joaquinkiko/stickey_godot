@@ -424,16 +424,40 @@ static func deserialize_input_mappings(config: ConfigFile) -> void:
 				var value := OS.find_keycode_from_string(bindings[input][n])
 				if value != KEY_UNKNOWN: keyboard_mappings[OS.find_keycode_from_string(bindings[input][n])] = input
 
-## Helps rebind keyboard mappings
-static func rebind_key(key: Key, input: InputType) -> void:
+## Helps rebind keyboard mappings, if [param auto_remap] is true, will swap any other matching keys/buttons
+static func rebind_key(key: Key, input: InputType, auto_remap: bool = true) -> void:
+	if auto_remap && keyboard_mappings.has(key):
+		var old_input: InputType = keyboard_mappings[key]
+		if input == old_input: return
+		if keyboard_mappings.values().has(input):
+			var old_key: Key = keyboard_mappings.find_key(input)
+			keyboard_mappings[old_key] = old_input
+		elif mouse_mappings.values().has(input):
+			var old_button: Key = mouse_mappings.find_key(input)
+			mouse_mappings[old_button] = old_input
 	keyboard_mappings[key] = input
 
-## Helps rebind mouse mappings
-static func rebind_mouse(mouse_button: MouseButton, input: InputType) -> void:
+## Helps rebind mouse mappings, if [param auto_remap] is true, will swap any other matching buttons/keys
+static func rebind_mouse(mouse_button: MouseButton, input: InputType, auto_remap: bool = true) -> void:
+	if auto_remap && mouse_mappings.has(mouse_button):
+		var old_input: InputType = mouse_mappings[mouse_button]
+		if input == old_input: return
+		if mouse_mappings.values().has(input):
+			var old_button: Key = mouse_mappings.find_key(input)
+			mouse_mappings[old_button] = old_input
+		elif keyboard_mappings.values().has(input):
+			var old_key: Key = keyboard_mappings.find_key(input)
+			keyboard_mappings[old_key] = old_input
 	mouse_mappings[mouse_button] = input
 
-## Helps rebind joy remappings
-static func rebind_joy(joy_button: JoyButton, input: InputType) -> void:
+## Helps rebind joy remappings, if [param auto_remap] is true, will swap any other matching buttons
+static func rebind_joy(joy_button: JoyButton, input: InputType, auto_remap: bool = true) -> void:
+	if auto_remap && joy_remappings.has(joy_button):
+		var old_input: InputType = joy_remappings[joy_button]
+		if input == old_input: return
+		if joy_remappings.values().has(input):
+			var old_button: Key = joy_remappings.find_key(input)
+			joy_remappings[old_button] = old_input
 	joy_remappings[joy_button] = input
 
 ## Safely retrieve [enum InputType] from [member input_nicknames],
