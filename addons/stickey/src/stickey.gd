@@ -377,9 +377,11 @@ static func serialize_input_mappings() -> ConfigFile:
 		bindings[joy_remappings[button]].append("JoyButton%s"%button)
 	var output := ConfigFile.new()
 	for input in bindings.keys():
+		var key: String = get_input_nickname(input)
+		if key.is_empty(): key = get_input_type_string(input).to_pascal_case()
 		output.set_value(
 			ProjectSettings.get_setting("stickey_input/general/serialization/section_key", "InputMappings"),
-			get_input_type_string(input).to_pascal_case(),
+			key,
 			bindings[input]
 			)
 	return output
@@ -393,7 +395,7 @@ static func deserialize_input_mappings(config: ConfigFile) -> void:
 	for key in config.get_section_keys(ProjectSettings.get_setting("stickey_input/general/serialization/section_key", "InputMappings")):
 		var key_type: int = -1
 		for input in MAX_INPUT_TYPES:
-			if get_input_type_string(input).to_pascal_case() == key:
+			if get_input_type_string(input).to_pascal_case() == key || get_input(key) == input:
 				key_type = input
 				break
 		if key_type == -1: continue
@@ -438,6 +440,12 @@ static func rebind_joy(joy_button: JoyButton, input: InputType) -> void:
 ## or returns [member UNKNOWN_INPUT_VALUE] if cannot retrieve
 static func get_input(nickname: String) -> InputType:
 	return input_nicknames.get(nickname, UNKNOWN_INPUT_VALUE)
+
+## Safely retrieve [String] key from [member input_nicknames], returning "" if not found
+static func get_input_nickname(input: InputType) -> String:
+	if input_nicknames.values().has(input):
+		return input_nicknames.find_key(input) as String
+	else: return ""
 
 ## Safely retrieve [member devices] or matching keyboard from [member keyboard_shared_device],
 ## returning a placeholder device, if device still cannot be found
