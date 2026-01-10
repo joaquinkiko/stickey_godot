@@ -32,6 +32,9 @@ const SETTING_NAME_DEFAULT_BINDINGS_MOUSE_BASE := "stickey_input/default_binding
 const SETTING_NAME_MOUSE_MOTION_CONTROL := "stickey_input/default_bindings/general/mouse_motion_input"
 const SETTING_VALUE_MOUSE_MOTION_CONTROL := 1
 const SETTING_HINT_MOUSE_MOTION_CONTROL := "None:-1,Left Stick:0,Right Stick:1"
+const SETTING_NAME_CURSOR_DEFAULT_MODE := "stickey_input/general/cursor_display/default_mode"
+const SETTING_VALUE_CURSOR_DEFAULT_MODE := 1
+const SETTING_HINT_CURSOR_DEFAULT_MODE := "Always show:0,Show only for keyboard users:1,Never show:2"
 
 func _enable_plugin() -> void:
 	add_autoload_singleton("StickeyManager", "src/stickey_manager.gd")
@@ -154,6 +157,15 @@ func _enter_tree() -> void:
 		"type": TYPE_INT,
 		"hint": PROPERTY_HINT_ENUM,
 		"hint_string": SETTING_HINT_MOUSE_MOTION_CONTROL
+	})
+	if !ProjectSettings.has_setting(SETTING_NAME_CURSOR_DEFAULT_MODE):
+		ProjectSettings.set_setting(SETTING_NAME_CURSOR_DEFAULT_MODE, SETTING_VALUE_CURSOR_DEFAULT_MODE)
+	ProjectSettings.set_initial_value(SETTING_NAME_CURSOR_DEFAULT_MODE, SETTING_VALUE_CURSOR_DEFAULT_MODE)
+	ProjectSettings.add_property_info({
+		"name": SETTING_NAME_CURSOR_DEFAULT_MODE,
+		"type": TYPE_INT,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": SETTING_HINT_CURSOR_DEFAULT_MODE
 	})
 	for n in Stickey.MAX_INPUT_MASK_BITS:
 		_add_setting_input_nickname(n)

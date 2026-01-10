@@ -44,6 +44,13 @@ var is_keyboard_primary: bool = false
 var mouse_raw := Vector2.ZERO
 ## Stick to translate mouse motion too
 var mouse_stick: Stick = Stick.NONE
+## Current cursor mode (see [enum Stickey.CursorMode])
+var cursor_mode: Stickey.CursorMode:
+	get: return _cursor_mode
+	set(value):
+		_cursor_mode = value
+		_update_cursor_mode()
+var _cursor_mode: Stickey.CursorMode
 ## Bitmask used internally for mapping keyboard to stick axis
 var _key_to_axis_mask: int
 
@@ -78,6 +85,7 @@ func _init() -> void:
 			push_warning("OS not currently accounted for by Stickey Manager")
 	_initialize_default_mappings()
 	Input.joy_connection_changed.connect(_joy_connection_changed)
+	primary_device_changed.connect(_primary_device_changed)
 	for n in Stickey.MAX_INPUT_MASK_BITS:
 		var path: String = "%s/%s"%[
 		"stickey_input/input_nicknames",
@@ -89,6 +97,7 @@ func _init() -> void:
 				push_warning("Duplicate input nicknames '%s'!"%value)
 			else:
 				Stickey.input_nicknames.set(value, n)
+	cursor_mode = ProjectSettings.get_setting("stickey_input/general/cursor_display/default_mode", 1)
 
 func _process(delta: float) -> void:
 	if mouse_raw != Vector2.ZERO && Input.get_last_mouse_screen_velocity() != Vector2.ZERO:
@@ -138,6 +147,9 @@ func _joy_connection_changed(index: int, connected: bool) -> void:
 			is_keyboard_primary = true
 			primary_device_changed.emit(true)
 		Stickey.devices.erase(index)
+
+func _primary_device_changed(_is_keyboard: bool) -> void:
+	_update_cursor_mode()
 
 func _input(event: InputEvent) -> void:
 	if event.is_echo(): return
@@ -368,3 +380,22 @@ func _update_key_axis(pressed: bool, axis: Stickey.AxisType, dir_bit: int, inv_d
 	else:
 		_key_to_axis_mask &= ~dir_bit
 		_update_axis(KEYBOARD_INDEX, axis, int(_key_to_axis_mask & inv_dir_bit) * -multiplier)
+
+## Updated current value of [member Input.mouse_mode] based on [member cursor_mode]
+func _update_cursor_mode() -> void:
+	match cursor_mode:
+		Stickey.CursorMode.ALWAYS_VISIBLE:
+			if is_keyboard_primary:
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+			else:
+				Input.mouse_mode = Input.MOUSE_MODE_CONFINED
+		Stickey.CursorMode.SHOWN_FOR_KEYBOARD:
+			if is_keyboard_primary:
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+			else:
+				Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+		Stickey.CursorMode.ALWAYS_HIDDEN:
+			if is_keyboard_primary:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			else:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED

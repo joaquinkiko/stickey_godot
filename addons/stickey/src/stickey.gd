@@ -72,6 +72,17 @@ enum DeviceType {
 	PLAYSTATION = 3,
 	STEAMDECK = 4
 	}
+## Determines display mode based on current input device as follows:
+## [br][br]					|	Keyboard and Mouse	| Joy controller
+## [br] ALWAYS_VISIBLE		|	MOUSE_MODE_VISIBLE	| MOUSE_MODE_CONFINED
+## [br] SHOWN_FOR_KEYBOARD	|	MOUSE_MODE_VISIBLE	| MOUSE_MODE_HIDDEN
+## [br] ALWAYS_HIDDEN		|	MOUSE_MODE_CAPTURED	| MOUSE_MODE_CAPTURED
+enum CursorMode {
+	ALWAYS_VISIBLE = 0,
+	SHOWN_FOR_KEYBOARD = 1,
+	ALWAYS_HIDDEN = 2
+	}
+
 
 ## Connected devices, including keyboard
 static var devices: Dictionary[int, StickeyDevice]
@@ -479,3 +490,7 @@ static func get_input_nickname(input: InputType) -> StringName:
 static func get_device(index: int = 0) -> StickeyDevice:
 	if index == keyboard_shared_device && !devices.has(index): index = KEYBOARD_INDEX
 	return devices.get(index, StickeyDevice.new(0, "Missing Device"))
+
+## Switches cursor display mode
+static func set_cursor_display_mode(mode: CursorMode) -> void:
+	StickeyManager.cursor_mode = mode
